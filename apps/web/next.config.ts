@@ -5,6 +5,7 @@ const config: NextConfig = {
   // Workspace packages ship TypeScript source; Next compiles them.
   transpilePackages: ["@reportpilot/core", "@reportpilot/demo", "@reportpilot/charts", "@reportpilot/report"],
   poweredByHeader: false,
+  devIndicators: false,
   async headers() {
     return [
       {
