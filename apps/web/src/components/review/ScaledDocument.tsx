@@ -25,7 +25,7 @@ export function ScaledDocument({ children, pages, gap }: { children: React.React
 
   const height = (pages * 1123 + (pages - 1) * gap) * scale;
   return (
-    <div ref={outer} className="w-full" style={{ height: scale ? height : undefined }}>
+    <div ref={outer} className="w-full overflow-hidden" style={{ height: scale ? height : undefined }}>
       <div
         className="origin-top-left transition-opacity duration-(--duration-settle)"
         style={{ width: PAGE_WIDTH, transform: `scale(${scale || 1})`, opacity: scale ? 1 : 0 }}
