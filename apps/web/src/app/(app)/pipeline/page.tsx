@@ -57,9 +57,9 @@ export default function PipelinePage() {
           description="Every stage writes its result to the database, so a failed run resumes where it stopped. One source failing never blocks the others."
         />
 
-        <section aria-labelledby="matrix-heading">
+        <section aria-labelledby="matrix-heading" className="min-w-0">
           <SectionHeading id="matrix-heading" title="Stages by site" meta={`${runs.length} runs`} />
-          <div className="overflow-x-auto rounded-lg bg-raised shadow-raised">
+          <div className="relative overflow-x-auto rounded-lg bg-raised shadow-raised">
             <table className="w-full min-w-[720px] text-left text-small">
               <thead>
                 <tr className="border-b border-line text-ink-3">
@@ -113,7 +113,7 @@ export default function PipelinePage() {
             {failed.map((r) => (
               <div key={r.id} className="rounded-lg bg-act-soft/60 p-4">
                 <p className="text-small font-medium text-act">{r.row.client.name} · {STAGE_LABEL[r.stage]}</p>
-                <p className="mt-1 font-mono text-[12px] leading-5 text-ink-2">{r.error}</p>
+                <p className="mt-1 font-mono text-[12px] leading-5 break-words text-ink-2">{r.error}</p>
               </div>
             ))}
           </section>
@@ -125,7 +125,7 @@ export default function PipelinePage() {
           } />
           <ul className="divide-y divide-line">
             {JOBS.map((j) => (
-              <li key={j.name} className="grid gap-x-6 gap-y-1 py-4 sm:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)_minmax(0,2fr)]">
+              <li key={j.name} className="grid grid-cols-1 gap-x-6 gap-y-1 py-4 sm:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)_minmax(0,2fr)]">
                 <div className="flex items-center gap-3">
                   <span className="flex size-8 items-center justify-center rounded-md bg-accent-soft text-accent"><j.icon size={16} aria-hidden /></span>
                   <div>
