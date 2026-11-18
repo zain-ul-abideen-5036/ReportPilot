@@ -153,7 +153,7 @@ export function speedFindings(sp: BuiltSpeed): Finding[] {
     const failing = (Object.entries(assessment.ratings) as Array<[string, string]>)
       .filter(([, r]) => r !== "good")
       .map(([k]) => k.toUpperCase());
-    const facts = { failing: failing.join(" and ") };
+    const facts = { failing: failing.length > 1 ? `${failing.slice(0, -1).join(", ")} and ${failing.at(-1)}` : failing.join("") };
     out.push(finding({
       id: "cwv-fail", area: "speed", severity: "warning", weight: failing.length * 10,
       title: `Fails Core Web Vitals on ${facts.failing}`,
@@ -180,11 +180,12 @@ export function speedFindings(sp: BuiltSpeed): Finding[] {
   if (mobile.length) {
     const worst = mobile.reduce((a, b) => (b.score < a.score ? b : a));
     if (worst.score < 50) {
-      const facts = { score: String(Math.round(worst.score)), page: urlPath(worst.url) };
+      const path = urlPath(worst.url);
+      const facts = { score: String(Math.round(worst.score)), page: path === "/" ? "the homepage" : path };
       out.push(finding({
         id: "lab-mobile-low", area: "speed", severity: "warning", weight: 5,
         title: `Mobile lab score of ${facts.score} on ${facts.page}`,
-        sentence: `${facts.page} scores ${facts.score} out of 100 in Lighthouse on mobile.`,
+        sentence: `${facts.page.charAt(0).toUpperCase()}${facts.page.slice(1)} scores ${facts.score} out of 100 in Lighthouse on mobile.`,
         action: `Profile ${facts.page} on a throttled mobile connection and address the top opportunity.`,
         facts,
       }));
