@@ -9,8 +9,8 @@ const TONE: Record<ReportStatus, string> = {
   collecting: "bg-ink-4/50",
   draft: "bg-ink-3",
   in_review: "bg-watch",
-  approved: "bg-accent/60",
-  sent: "bg-accent",
+  approved: "bg-[#6f9a7c]",
+  sent: "bg-brand",
   failed: "bg-act",
 };
 

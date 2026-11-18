@@ -18,8 +18,8 @@ export function TimeSaved({ history, sites }: Props) {
   return (
     <div>
       <p className="text-small text-ink-3">Time saved this cycle</p>
-      <p className="mt-1 font-display text-[3.25rem] leading-none tracking-[-0.03em] text-ink tnum">
-        {savedHours}<span className="ml-1 text-title text-ink-3">hours</span>
+      <p className="mt-1 font-display text-[3.5rem] leading-none tracking-[-0.03em] tnum">
+        <span className="text-gradient">{savedHours}</span><span className="ml-1.5 text-title text-ink-3 italic">hours</span>
       </p>
       <p className="mt-2 max-w-[34ch] text-small text-ink-2">
         {sites} reports at {last.manualMinutes} minutes of review each, against about {manualHours} hours each by hand.
