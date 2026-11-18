@@ -1,0 +1,15 @@
+{
+  "name": "@reportpilot/uptime-worker",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev --test-scheduled",
+    "deploy": "wrangler deploy",
+    "typecheck": "tsc -p tsconfig.json"
+  },
+  "dependencies": {
+    "@reportpilot/core": "*",
+    "postgres": "^3.4.9"
+  }
+}
