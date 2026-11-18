@@ -78,9 +78,11 @@ export function ReviewPanel(props: Props) {
         </ul>
         <p className="mt-2 flex items-center gap-1.5 text-micro text-ink-3">
           <Sparkle size={12} aria-hidden />
-          {props.aiEnabled
+          {props.narrativeSource === "ai"
             ? "Wording polished by AI. Every figure was checked against the source data."
-            : "AI wording is off for this client. Written from templates."}
+            : props.aiEnabled
+              ? "Written from templates. AI polishing kept the template because a figure did not match."
+              : "AI wording is off for this client. Written from templates."}
         </p>
       </section>
 
