@@ -20,6 +20,7 @@ export interface SparklineProps {
 export function Sparkline({
   values, width = 120, height = 32, invert = false, stroke = "var(--chart-line)", fill = true, label,
 }: SparklineProps) {
+  const id = `spark${useId().replace(/:/g, "")}`;
   if (values.length < 2) return null;
   const pad = 3;
   const min = Math.min(...values);
@@ -29,7 +30,6 @@ export function Sparkline({
   const points: Point[] = values.map((v, i) => [x(i), y(v)]);
   const line = smoothPath(points);
   const last = points[points.length - 1]!;
-  const id = `spark${useId().replace(/:/g, "")}`;
   return (
     <svg
       viewBox={`0 0 ${width} ${height}`}
