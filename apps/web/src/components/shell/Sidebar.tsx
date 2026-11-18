@@ -8,6 +8,7 @@ import {
 } from "@phosphor-icons/react";
 import { NAV, isActive, type NavItem } from "./nav";
 import { Logo } from "./Logo";
+import { ThemeSwitch } from "./ThemeSwitch";
 import { cn } from "@/lib/cn";
 
 const ICONS: Record<NavItem["icon"], typeof Bell> = {
@@ -128,6 +129,7 @@ export function Sidebar({ orgName, user, badges, cycle }: SidebarProps) {
       </nav>
       <div className="mt-auto flex flex-col gap-3 p-3">
         <CycleMeter cycle={cycle} />
+        <ThemeSwitch />
         <div className="flex items-center gap-2.5 px-1">
           <span className="flex size-7 items-center justify-center rounded-full bg-accent-soft text-micro font-semibold text-accent">{user.initials}</span>
           <span className="min-w-0 flex-1">

@@ -7,7 +7,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   const total = Object.values(counts).reduce((a, b) => a + b, 0);
   const openAlerts = listAlerts().filter((a) => a.state === "open").length;
   return (
-    <div className="min-h-dvh lg:flex">
+    <div className="grain min-h-dvh lg:flex">
       <a href="#main" className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-(--z-toast) focus:rounded-md focus:bg-raised focus:px-3 focus:py-2 focus:shadow-raised">
         Skip to content
       </a>
@@ -18,7 +18,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         cycle={{ label: `${formatPeriodShort(period)} reports`, sent: counts.sent, total }}
       />
       <div className="min-w-0 flex-1">
-        <main id="main" className="mx-auto w-full max-w-[1320px] px-4 pb-16 sm:px-6 lg:px-10">
+        <main id="main" className="mx-auto w-full max-w-[1320px] min-w-0 px-4 pb-16 sm:px-6 lg:px-10">
           {children}
         </main>
       </div>
