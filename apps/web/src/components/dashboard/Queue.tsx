@@ -20,7 +20,11 @@ export function Queue({ items }: { items: QueueItem[] }) {
       {items.map((item) => {
         const { row } = item;
         const href = item.kind === "report" ? `/reports/${row.site.id}` : `/alerts#${item.alert.id}`;
-        const headline = item.kind === "report" ? row.report.findings[0]?.title : item.alert.title;
+        const headline = item.kind === "alert"
+          ? item.alert.title
+          : row.status === "failed"
+            ? "PageSpeed collection failed after 3 attempts. Other sections are ready."
+            : row.report.findings[0]?.title;
         return (
           <li key={item.kind === "report" ? row.site.id : item.alert.id}>
             <Link href={href} className="group -mx-3 flex items-center gap-4 rounded-md px-3 py-3.5 transition-colors duration-(--duration-fast) hover:bg-sunken/70">
