@@ -255,3 +255,5 @@
 @media (prefers-reduced-motion: reduce) {
   .draw path[stroke] { stroke-dashoffset: 0 !important; stroke-dasharray: none !important; }
 }
+
+@keyframes grow { from { transform: scaleY(0); } to { transform: scaleY(1); } }
