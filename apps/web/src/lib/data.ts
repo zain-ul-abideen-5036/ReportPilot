@@ -89,5 +89,5 @@ export function shareToken(siteId: string): string {
   // Demo tokens are derived so links are stable; production uses crypto.randomBytes(16).
   let h = 0x811c9dc5;
   for (const ch of `${siteId}:${period}`) h = Math.imul(h ^ ch.charCodeAt(0), 16777619) >>> 0;
-  return `${h.toString(36)}${(h ^ 0x5bd1e995).toString(36)}${siteId.length.toString(36)}k7`;
+  return `${h.toString(36)}${((h ^ 0x5bd1e995) >>> 0).toString(36)}${siteId.length.toString(36)}k7`;
 }
