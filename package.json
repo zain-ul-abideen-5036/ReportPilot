@@ -1,0 +1,29 @@
+{
+  "name": "reportpilot",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Automated monthly client reports for web agencies: Search Console, page speed and uptime, written up in plain English and sent as a branded PDF after approval.",
+  "license": "MIT",
+  "author": "Zain Ul Abideen",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/zain-ul-abideen-5036/ReportPilot.git"
+  },
+  "type": "module",
+  "workspaces": [
+    "apps/*",
+    "packages/*",
+    "workers/*",
+    "jobs/*"
+  ],
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "dev": "npm run dev -w @reportpilot/web",
+    "build": "npm run build -w @reportpilot/web",
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  }
+}
