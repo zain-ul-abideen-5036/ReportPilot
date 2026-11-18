@@ -27,6 +27,11 @@ export interface Finding {
   facts: Record<string, string>;
 }
 
+/** "1 page" / "3 pages". */
+export function plural(count: number, one: string, many = `${one}s`): string {
+  return `${count} ${count === 1 ? one : many}`;
+}
+
 const SEVERITY_WEIGHT: Record<Severity, number> = { critical: 400, warning: 300, positive: 200, info: 100 };
 
 function finding(f: Omit<Finding, "weight"> & { weight?: number }): Finding {
@@ -66,7 +71,7 @@ export function searchFindings(s: BuiltSearch): Finding[] {
       }));
     } else {
       out.push(finding({
-        id: "clicks-steady", area: "search", severity: "info",
+        id: "clicks-steady", area: "search", severity: "info", weight: 60,
         title: "Organic clicks held steady",
         sentence: `Organic clicks were steady at ${facts.clicks} (${facts.mom} on last month${yoyPart}).`,
         action: null, facts,
@@ -85,8 +90,8 @@ export function searchFindings(s: BuiltSearch): Finding[] {
     };
     out.push(finding({
       id: "striking-distance", area: "search", severity: "info", weight: 40,
-      title: `${facts.count} keywords one push from page one`,
-      sentence: `${facts.count} search terms rank between positions 8 and 20 with ${facts.impressions} impressions between them. The biggest is "${facts.query}" at position ${facts.position}.`,
+      title: `${plural(s.strikingDistance.length, "keyword")} one push from page one`,
+      sentence: `${plural(s.strikingDistance.length, "search term")} rank between positions 8 and 20 with ${facts.impressions} impressions between them. The biggest is "${facts.query}" at position ${facts.position}.`,
       action: `Strengthen the page ranking for "${facts.query}": expand the content, add internal links from related pages and tighten the title.`,
       facts,
     }));
@@ -104,8 +109,8 @@ export function searchFindings(s: BuiltSearch): Finding[] {
     };
     out.push(finding({
       id: "low-ctr", area: "search", severity: "info", weight: 35,
-      title: `${facts.count} pages under-earn clicks for their position`,
-      sentence: `${facts.count} pages are seen often but clicked rarely. ${facts.page} gets a ${facts.ctr} click-through rate where its position usually earns ${facts.expected}. Fixing these could add around ${facts.missed} clicks a month.`,
+      title: `${plural(s.lowCtr.length, "page")} under-earn clicks for their position`,
+      sentence: `${plural(s.lowCtr.length, "page is", "pages are")} seen often but clicked rarely. ${facts.page} gets a ${facts.ctr} click-through rate where its position usually earns ${facts.expected}. Fixing these could add around ${facts.missed} clicks a month.`,
       action: `Rewrite the title and meta description of ${facts.page} so it answers the search more directly.`,
       facts,
     }));
@@ -114,18 +119,18 @@ export function searchFindings(s: BuiltSearch): Finding[] {
   if (s.topTen.entered.length > 0) {
     const facts = { count: String(s.topTen.entered.length), query: s.topTen.entered[0]!.query };
     out.push(finding({
-      id: "top10-entered", area: "search", severity: "positive", weight: 20,
-      title: `${facts.count} new keywords on page one`,
-      sentence: `${facts.count} search terms moved onto page one this month, including "${facts.query}".`,
+      id: "top10-entered", area: "search", severity: s.topTen.entered.length >= 3 ? "positive" : "info", weight: 20,
+      title: `${plural(s.topTen.entered.length, "new keyword")} on page one`,
+      sentence: `${plural(s.topTen.entered.length, "search term")} moved onto page one this month, including "${facts.query}".`,
       action: null, facts,
     }));
   }
   if (s.topTen.dropped.length > 0) {
     const facts = { count: String(s.topTen.dropped.length), query: s.topTen.dropped[0]!.query };
     out.push(finding({
-      id: "top10-dropped", area: "search", severity: "warning", weight: 10,
-      title: `${facts.count} keywords dropped off page one`,
-      sentence: `${facts.count} search terms fell off page one, including "${facts.query}".`,
+      id: "top10-dropped", area: "search", severity: s.topTen.dropped.length >= 3 ? "warning" : "info", weight: 10,
+      title: `${plural(s.topTen.dropped.length, "keyword")} dropped off page one`,
+      sentence: `${plural(s.topTen.dropped.length, "search term")} fell off page one, including "${facts.query}".`,
       action: `Compare the page for "${facts.query}" with the results now ranking above it.`,
       facts,
     }));
@@ -202,15 +207,15 @@ export function uptimeFindings(u: BuiltUptime): Finding[] {
       title: `${facts.uptime} uptime`,
       sentence: s.incidentCount === 0
         ? `The site was up ${facts.uptime} of the month with no outages.`
-        : `The site was up ${facts.uptime} of the month; ${facts.incidents} short outages added up to ${facts.downtime}.`,
+        : `The site was up ${facts.uptime} of the month; ${plural(s.incidentCount, "short outage")} added up to ${facts.downtime}.`,
       action: null, facts,
     }));
   } else {
     out.push(finding({
       id: "uptime-low", area: "reliability", severity: s.uptimePct < 99 ? "critical" : "warning",
       weight: Math.round((100 - s.uptimePct) * 10),
-      title: `${facts.uptime} uptime, ${facts.incidents} outages`,
-      sentence: `The site was up ${facts.uptime} of the month. ${facts.incidents} outages added up to ${facts.downtime} of downtime.`,
+      title: `${facts.uptime} uptime, ${plural(s.incidentCount, "outage")}`,
+      sentence: `The site was up ${facts.uptime} of the month. ${plural(s.incidentCount, "outage")} added up to ${facts.downtime} of downtime.`,
       action: "Review the incident causes below with the hosting provider.",
       facts,
     }));
@@ -245,8 +250,8 @@ export function indexingFindings(ix: BuiltIndexing): Finding[] {
     const facts = { count: String(failing.length), page: urlPath(failing[0]!.url), state: failing[0]!.coverageState };
     out.push(finding({
       id: "key-page-not-indexed", area: "indexing", severity: "critical", weight: 30,
-      title: `${facts.count} key pages not indexed`,
-      sentence: `${facts.count} key pages are not in Google's index. ${facts.page} reports "${facts.state}".`,
+      title: `${plural(failing.length, "key page")} not indexed`,
+      sentence: `${plural(failing.length, "key page is", "key pages are")} not in Google's index. ${facts.page} reports "${facts.state}".`,
       action: `Fix the cause on ${facts.page} and request indexing in Search Console.`,
       facts,
     }));
@@ -256,7 +261,7 @@ export function indexingFindings(ix: BuiltIndexing): Finding[] {
     const facts = { errors: String(errors) };
     out.push(finding({
       id: "sitemap-errors", area: "indexing", severity: "warning",
-      title: `${facts.errors} sitemap errors`,
+      title: `${plural(errors, "sitemap error")}`,
       sentence: `Search Console reports ${facts.errors} errors in the submitted sitemaps.`,
       action: "Remove redirected or missing URLs from the sitemap and resubmit it.",
       facts,
