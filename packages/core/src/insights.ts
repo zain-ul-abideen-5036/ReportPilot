@@ -109,7 +109,7 @@ export function searchFindings(s: BuiltSearch): Finding[] {
     };
     out.push(finding({
       id: "low-ctr", area: "search", severity: "info", weight: 35,
-      title: `${plural(s.lowCtr.length, "page")} under-earn clicks for their position`,
+      title: `${plural(s.lowCtr.length, "page under-earns", "pages under-earn")} clicks for their position`,
       sentence: `${plural(s.lowCtr.length, "page is", "pages are")} seen often but clicked rarely. ${facts.page} gets a ${facts.ctr} click-through rate where its position usually earns ${facts.expected}. Fixing these could add around ${facts.missed} clicks a month.`,
       action: `Rewrite the title and meta description of ${facts.page} so it answers the search more directly.`,
       facts,
