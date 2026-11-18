@@ -1,0 +1,39 @@
+# dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# builds
+.next/
+out/
+dist/
+build/
+*.tsbuildinfo
+.wrangler/
+.turbo/
+
+# generated output
+output/
+reports-out/
+coverage/
+playwright-report/
+test-results/
+blob-report/
+
+# environment
+.env
+.env.*
+!.env.example
+.dev.vars
+service-account*.json
+
+# logs
+npm-debug.log*
+*.log
+
+# editors and OS
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/*
+!.vscode/extensions.json
