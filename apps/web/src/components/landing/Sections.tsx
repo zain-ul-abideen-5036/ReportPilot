@@ -1,16 +1,19 @@
 import Link from "next/link";
-import { ArrowRight, ArrowUpRight } from "@phosphor-icons/react/dist/ssr";
+import { ArrowRight, ArrowUpRight, Clock, Coffee } from "@phosphor-icons/react/dist/ssr";
+import { CountUp } from "./CountUp";
+import { Photo } from "./Photo";
 
-/* Shared heading for numbered landing sections. */
+/* Shared heading for numbered landing chapters. */
 export function Chapter({ index, kicker, title, children }: { index: string; kicker: string; title: React.ReactNode; children?: React.ReactNode }) {
   return (
-    <div className="reveal grid gap-6 border-t border-ink pt-6 md:grid-cols-[180px_minmax(0,1fr)] md:gap-10">
+    <div className="reveal grid gap-6 pt-6 md:grid-cols-[180px_minmax(0,1fr)] md:gap-10">
+      <div className="md:col-span-2"><div className="rule-gradient h-px w-full opacity-80" /></div>
       <p className="flex items-baseline gap-3 text-small text-ink-3">
-        <span className="font-display text-title text-accent italic">{index}</span>
+        <span className="font-display text-title text-brass italic">{index}</span>
         {kicker}
       </p>
       <div>
-        <h2 className="max-w-[20ch] font-display text-[2.25rem] leading-[1.05] tracking-[-0.025em] text-ink sm:text-[3rem]">{title}</h2>
+        <h2 className="max-w-[20ch] font-display text-[2.25rem] leading-[1.04] tracking-[-0.028em] text-ink sm:text-[3.25rem]">{title}</h2>
         {children && <div className="mt-5 max-w-[58ch] text-lead text-ink-2">{children}</div>}
       </div>
     </div>
@@ -18,17 +21,19 @@ export function Chapter({ index, kicker, title, children }: { index: string; kic
 }
 
 export function Figures() {
-  const figures = [
-    { value: "3 h", label: "a typical agency spends on each client's monthly report", strike: true },
-    { value: "10 min", label: "to review and approve the same report in ReportPilot" },
-    { value: "£0", label: "a month to run for a portfolio or a small agency, on free tiers" },
-    { value: "5 min", label: "between uptime checks, with alerts between reports" },
+  const figures: Array<{ to: number; prefix?: string; suffix: string; label: string; strike?: boolean }> = [
+    { to: 3, suffix: " h", label: "a typical agency spends on each client's monthly report", strike: true },
+    { to: 10, suffix: " min", label: "to review and approve the same report in ReportPilot" },
+    { to: 0, prefix: "£", suffix: "", label: "a month to run for a portfolio or a small agency, on free tiers" },
+    { to: 288, suffix: "", label: "uptime checks a day for every site, with alerts between reports" },
   ];
   return (
-    <dl className="grid grid-cols-2 border-y border-line lg:grid-cols-4">
+    <dl className="grid grid-cols-2 lg:grid-cols-4">
       {figures.map((f, i) => (
-        <div key={f.value} className={`reveal px-1 py-8 sm:px-6 ${i % 2 ? "border-l border-line" : ""} ${i === 2 ? "lg:border-l" : ""} ${i > 1 ? "border-t border-line lg:border-t-0" : ""}`}>
-          <dt className={`font-display text-[3rem] leading-none tracking-[-0.03em] tnum sm:text-[4rem] ${f.strike ? "text-ink-4 line-through decoration-act/60 decoration-2" : "text-ink"}`}>{f.value}</dt>
+        <div key={f.label} className={`reveal px-1 py-9 sm:px-7 ${i % 2 ? "border-l border-line" : ""} ${i === 2 ? "lg:border-l" : ""} ${i > 1 ? "border-t border-line lg:border-t-0" : ""}`}>
+          <dt className={`font-display text-[3.25rem] leading-none tracking-[-0.035em] tnum sm:text-[4.5rem] ${f.strike ? "text-ink-4 line-through decoration-copper/60 decoration-2" : "text-gradient"}`}>
+            <CountUp to={f.to} prefix={f.prefix} suffix={f.suffix} />
+          </dt>
           <dd className="mt-3 max-w-[26ch] text-small text-ink-3">{f.label}</dd>
         </div>
       ))}
@@ -36,26 +41,54 @@ export function Figures() {
   );
 }
 
-const STEPS = [
-  { n: "01", title: "Collect", body: "Search Console, PageSpeed, the Chrome UX Report and uptime, each independent. One failing never blocks the others." },
-  { n: "02", title: "Calculate", body: "Month-on-month, year-on-year, striking-distance keywords, low-CTR pages. Pure functions with unit tests." },
-  { n: "03", title: "Write", body: "A rules engine ranks what matters. Templates phrase it; AI may polish it, but only if every number survives a check." },
-  { n: "04", title: "Render", body: "Branded HTML printed to a tagged, accessible A4 PDF by a real Chromium." },
-  { n: "05", title: "Review", body: "The draft lands in the dashboard. Add a note, approve, or turn on auto-send per client." },
-  { n: "06", title: "Send", body: "Email with the PDF and a private web link. Bounces flag the contact; every step is logged." },
-];
-
-export function Steps() {
+/**
+ * The problem and the outcome as two photographs side by side. Offset
+ * vertically on desktop so the spread reads as an editorial layout rather
+ * than two equal tiles.
+ */
+export function BeforeAfter() {
   return (
-    <ol className="mt-14 grid gap-px overflow-hidden rounded-lg bg-line sm:grid-cols-2 lg:grid-cols-3">
-      {STEPS.map((s) => (
-        <li key={s.n} className="reveal group flex flex-col bg-paper p-6 transition-colors duration-(--duration-settle) hover:bg-surface sm:p-8">
-          <span className="font-display text-[2.75rem] leading-none text-ink-4 italic transition-colors duration-(--duration-settle) group-hover:text-accent">{s.n}</span>
-          <h3 className="mt-8 text-lead font-semibold text-ink">{s.title}</h3>
-          <p className="mt-2 text-body text-ink-3">{s.body}</p>
-        </li>
-      ))}
-    </ol>
+    <div className="mt-14 grid gap-10 md:grid-cols-2 md:gap-14">
+      <div className="reveal">
+        <Photo src="/images/before-the-report.jpg" alt="A man at a laptop with his hand on his forehead, frustrated" ratio="aspect-[4/3]" index="Before" caption="The first week of every month: exports, screenshots, a slide deck and an email, for every client, by hand." />
+        <ul className="mt-6 flex flex-col gap-2.5 text-body text-ink-2">
+          {["Copy figures out of four different tools", "Paste charts into slides, fix the formatting", "Write the commentary from scratch", "Email it, then repeat for the next client"].map((t) => (
+            <li key={t} className="flex gap-3"><Clock size={16} className="mt-0.5 shrink-0 text-ink-4" aria-hidden />{t}</li>
+          ))}
+        </ul>
+      </div>
+      <div className="reveal md:mt-24">
+        <Photo src="/images/after-the-report.jpg" alt="A man smiling at his desk, holding a folder" ratio="aspect-[4/3]" index="After" caption="On the 3rd, the drafts are already waiting. Read, add a line, approve. Ten minutes a client." />
+        <ul className="mt-6 flex flex-col gap-2.5 text-body text-ink-2">
+          {["Figures collected and checked overnight", "Charts and pages already in your brand", "A plain-English summary to start from", "One click to approve, or auto-send"].map((t) => (
+            <li key={t} className="flex gap-3"><Coffee size={16} className="mt-0.5 shrink-0 text-brass" aria-hidden />{t}</li>
+          ))}
+        </ul>
+      </div>
+    </div>
+  );
+}
+
+/** A real month from the demo data, told as a short case. */
+export function CaseStudy({ facts }: { facts: Array<{ value: string; label: string }> }) {
+  return (
+    <div className="mt-14 grid items-center gap-10 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)] lg:gap-16">
+      <Photo className="reveal" src="/images/dental-practice.jpg" alt="An empty treatment room in a modern dental practice" ratio="aspect-[5/4]" index="Demo client" caption="Harlow & Finch Dental, Leeds. A fictional practice whose October report ships with the demo." sizes="(min-width: 1024px) 50vw, 100vw" />
+      <div className="reveal">
+        <p className="font-display text-[1.75rem] leading-[1.25] tracking-[-0.015em] text-ink sm:text-[2rem]">
+          &ldquo;What changed this month, and what should we do next?&rdquo;
+        </p>
+        <p className="mt-3 text-body text-ink-3">The one question every client report has to answer. Here is how October answered it for the practice:</p>
+        <dl className="mt-8 grid grid-cols-2 gap-x-8 gap-y-7">
+          {facts.map((f) => (
+            <div key={f.label} className="border-t border-line pt-4">
+              <dt className="font-display text-[2.25rem] leading-none tracking-[-0.03em] text-ink tnum">{f.value}</dt>
+              <dd className="mt-2 text-small text-ink-3">{f.label}</dd>
+            </div>
+          ))}
+        </dl>
+      </div>
+    </div>
   );
 }
 
@@ -70,17 +103,20 @@ const TRUST = [
 
 export function Trust() {
   return (
-    <dl className="mt-14 grid gap-x-12 md:grid-cols-2">
-      {TRUST.map(([t, b]) => (
-        <div key={t} className="reveal grid grid-cols-[28px_1fr] gap-x-3 border-t border-line py-6">
-          <span className="mt-1 size-2 rounded-full bg-accent" aria-hidden />
-          <div>
-            <dt className="text-lead font-medium text-ink">{t}</dt>
-            <dd className="mt-1.5 text-body text-ink-3">{b}</dd>
+    <div className="mt-14 grid gap-12 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] lg:gap-16">
+      <Photo className="reveal lg:sticky lg:top-24 lg:self-start" src="/images/agency-review.jpg" alt="Three people around a table with laptops, notebooks and coffee" ratio="aspect-[4/3]" caption="Built for the people who sign their name under the report." />
+      <dl className="grid">
+        {TRUST.map(([t, b], i) => (
+          <div key={t} className="reveal grid grid-cols-[44px_1fr] gap-x-3 border-t border-line py-7 first:border-t-0 first:pt-0">
+            <span className="font-display text-title text-ink-4 italic">{String(i + 1).padStart(2, "0")}</span>
+            <div>
+              <dt className="text-lead font-semibold text-ink">{t}</dt>
+              <dd className="mt-1.5 max-w-[52ch] text-body text-ink-3">{b}</dd>
+            </div>
           </div>
-        </div>
-      ))}
-    </dl>
+        ))}
+      </dl>
+    </div>
   );
 }
 
@@ -95,13 +131,13 @@ const STACK = [
 
 export function Stack() {
   return (
-    <div className="reveal mt-14 overflow-hidden rounded-lg bg-raised shadow-raised">
+    <div className="reveal mt-14 overflow-hidden rounded-[10px] bg-raised shadow-raised">
       <table className="w-full text-left text-body">
         <caption className="sr-only">Free-tier services ReportPilot runs on</caption>
         <tbody className="divide-y divide-line">
           {STACK.map(([layer, choice, limit]) => (
-            <tr key={layer}>
-              <th scope="row" className="w-1/4 py-4 pr-4 pl-5 font-medium text-ink sm:pl-8">{layer}</th>
+            <tr key={layer} className="transition-colors duration-(--duration-fast) hover:bg-surface">
+              <th scope="row" className="w-1/4 py-4 pr-4 pl-5 font-semibold text-ink sm:pl-8">{layer}</th>
               <td className="py-4 pr-4 text-ink-2">{choice}</td>
               <td className="py-4 pr-5 text-right text-small text-ink-3 tnum sm:pr-8">{limit}</td>
             </tr>
@@ -114,22 +150,21 @@ export function Stack() {
 
 export function FinalCta() {
   return (
-    <section className="reveal relative overflow-hidden rounded-lg bg-ink px-6 py-16 text-paper sm:px-12 sm:py-24">
-      <p className="text-small text-paper/60">Ready when the 3rd comes round</p>
-      <h2 className="mt-4 max-w-[16ch] font-display text-[2.5rem] leading-[1.02] tracking-[-0.03em] sm:text-[4.25rem]">
-        Spend the first week of the month on <em className="text-[color:var(--accent-soft)]">the work</em>, not the report.
+    <section className="reveal relative isolate overflow-hidden rounded-[14px] bg-brand px-6 py-16 text-accent-ink sm:px-14 sm:py-24">
+      <div aria-hidden className="absolute -top-32 -right-24 -z-10 size-[520px] rounded-full bg-[radial-gradient(closest-side,rgb(232_190_130/0.45),transparent)] motion-safe:animate-[drift_18s_ease-in-out_infinite_alternate]" />
+      <div aria-hidden className="absolute -bottom-40 -left-20 -z-10 size-[460px] rounded-full bg-[radial-gradient(closest-side,rgb(150_200_170/0.3),transparent)]" />
+      <p className="text-small text-accent-ink/70">Ready when the 3rd comes round</p>
+      <h2 className="mt-4 max-w-[16ch] font-display text-[2.5rem] leading-[1.02] tracking-[-0.03em] sm:text-[4.5rem]">
+        Spend the first week of the month on <em className="text-[#f0d3a4]">the work</em>, not the report.
       </h2>
       <div className="mt-10 flex flex-wrap gap-3">
-        <Link href="/dashboard" className="press group inline-flex h-11 items-center gap-2 rounded-full bg-paper px-5 text-body font-medium text-ink hover:bg-surface">
+        <Link href="/dashboard" className="press group inline-flex h-12 items-center gap-2 rounded-full bg-paper px-6 text-body font-semibold text-ink shadow-[0_10px_30px_-12px_rgb(0_0_0/0.5)] hover:bg-raised">
           Open the demo dashboard<ArrowRight size={16} className="transition-transform duration-(--duration-fast) group-hover:translate-x-0.5" aria-hidden />
         </Link>
-        <a href="https://github.com/zain-ul-abideen-5036/ReportPilot" className="press inline-flex h-11 items-center gap-2 rounded-full px-5 text-body font-medium text-paper/80 shadow-[inset_0_0_0_1px_rgb(255_255_255/0.2)] hover:text-paper">
+        <a href="https://github.com/zain-ul-abideen-5036/ReportPilot" className="press inline-flex h-12 items-center gap-2 rounded-full px-6 text-body font-medium text-accent-ink/85 shadow-[inset_0_0_0_1px_rgb(255_255_255/0.28)] hover:text-accent-ink">
           Source on GitHub<ArrowUpRight size={15} aria-hidden />
         </a>
       </div>
-      <svg className="pointer-events-none absolute -right-16 -bottom-20 w-[420px] text-paper/[0.06]" viewBox="0 0 200 200" aria-hidden>
-        <path d="M20 170 L70 110 L105 135 L180 40" fill="none" stroke="currentColor" strokeWidth="14" strokeLinecap="round" strokeLinejoin="round" />
-      </svg>
     </section>
   );
 }
