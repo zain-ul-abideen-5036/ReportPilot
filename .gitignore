@@ -37,3 +37,7 @@ Thumbs.db
 .idea/
 .vscode/*
 !.vscode/extensions.json
+
+# Playwright snapshots are created on first CI run (Linux fonts differ from local)
+e2e/**/*-snapshots/*-win32.png
+e2e/**/*-snapshots/*-darwin.png
