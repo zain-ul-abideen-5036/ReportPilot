@@ -17,7 +17,9 @@
   },
   "dependencies": {
     "@reportpilot/core": "*",
-    "@reportpilot/demo": "*"
+    "@reportpilot/demo": "*",
+    "drizzle-orm": "^0.45.4",
+    "postgres": "^3.4.9"
   },
   "devDependencies": {
     "drizzle-kit": "^0.31.11"
