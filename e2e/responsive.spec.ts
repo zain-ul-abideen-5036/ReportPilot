@@ -19,12 +19,11 @@ test.describe("responsive layout", () => {
 });
 
 test.describe("theme", () => {
-  test("the product renders in its single light Paper theme, even when the system is dark", async ({ browser }) => {
-    const context = await browser.newContext({ colorScheme: "dark" });
-    const page = await context.newPage();
+  test.use({ colorScheme: "dark" });
+
+  test("the product renders in its single light Paper theme, even when the system is dark", async ({ page }) => {
     await page.goto("/dashboard");
     const bg = await page.evaluate(() => getComputedStyle(document.body).backgroundColor);
     expect(bg).toBe("rgb(246, 242, 234)");
-    await context.close();
   });
 });
