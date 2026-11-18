@@ -1,0 +1,30 @@
+name: Bug report
+description: Something is wrong or broken
+labels: [bug]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened
+      description: What you saw, and what you expected instead.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: "1. Open /reports/site_harlow\n2. Press Approve\n3. …"
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options: [Dashboard, Client PDF, Monthly pipeline, Uptime worker, Integrations, Docs]
+    validations:
+      required: true
+  - type: input
+    id: env
+    attributes:
+      label: Browser or environment
+      placeholder: "Chrome 140 on macOS, or GitHub Actions run #123"
