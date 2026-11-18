@@ -39,5 +39,25 @@
     "tsx": "^4.23.15",
     "typescript": "^5.9.3",
     "vitest": "^3.2.7"
+  },
+  "keywords": [
+    "seo-reporting",
+    "client-reports",
+    "agency-tools",
+    "search-console",
+    "pagespeed-insights",
+    "core-web-vitals",
+    "uptime-monitoring",
+    "pdf-report",
+    "white-label",
+    "nextjs",
+    "playwright",
+    "cloudflare-workers",
+    "drizzle",
+    "typescript"
+  ],
+  "homepage": "https://github.com/zain-ul-abideen-5036/ReportPilot#readme",
+  "bugs": {
+    "url": "https://github.com/zain-ul-abideen-5036/ReportPilot/issues"
   }
 }
