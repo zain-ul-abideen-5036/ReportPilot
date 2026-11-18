@@ -5,7 +5,7 @@ type Variant = "primary" | "secondary" | "quiet" | "danger";
 type Size = "sm" | "md";
 
 const VARIANT: Record<Variant, string> = {
-  primary: "bg-accent text-accent-ink hover:bg-accent-hover shadow-[inset_0_1px_0_rgb(255_255_255/0.12),0_1px_2px_rgb(0_0_0/0.12)] active:shadow-none",
+  primary: "bg-brand bg-brand-hover text-accent-ink shadow-[inset_0_1px_0_rgb(255_255_255/0.16),0_1px_2px_rgb(23_32_28/0.18),0_6px_16px_-8px_rgb(29_74_60/0.55)] active:shadow-none",
   secondary: "bg-raised text-ink hairline hover:bg-surface hover:shadow-[inset_0_0_0_1px_var(--line-strong)]",
   quiet: "text-ink-2 hover:text-ink hover:bg-sunken",
   danger: "bg-raised text-act hairline hover:bg-act-soft",
