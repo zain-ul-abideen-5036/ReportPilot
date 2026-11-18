@@ -1,0 +1,22 @@
+{
+  "name": "@reportpilot/pipeline",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "bin": {
+    "reportpilot": "src/cli.ts"
+  },
+  "scripts": {
+    "monthly": "tsx src/cli.ts monthly",
+    "weekly": "tsx src/cli.ts weekly",
+    "demo": "tsx src/cli.ts monthly --demo --dry-run",
+    "typecheck": "tsc -p tsconfig.json"
+  },
+  "dependencies": {
+    "@reportpilot/core": "*",
+    "@reportpilot/db": "*",
+    "@reportpilot/demo": "*",
+    "@reportpilot/integrations": "*",
+    "@reportpilot/report": "*"
+  }
+}
