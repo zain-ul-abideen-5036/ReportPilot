@@ -35,6 +35,15 @@ The MVP: the full monthly reporting loop, runnable without keys in demo mode.
 - **Docs**: design specification, architecture decisions, deployment,
   Search Console setup, runbook, privacy and design system.
 
+### Design
+
+- One light theme, "Paper & Pine", with pine-to-brass signature gradients and
+  a drifting glow; Fraunces and Hanken Grotesk; CC0 photography with an
+  editorial grade; count-up figures, an animated pipeline track and a marquee.
+
 ### Fixed
+
+- Grids without a base column overflowed on phones; screen-reader labels in
+  the pipeline table escaped their scroller.
 
 - Demo share tokens could contain a minus sign and produce broken links.
