@@ -35,7 +35,7 @@ export default function ClientsPage() {
                     <p className="truncate font-medium text-ink">{row.client.name}</p>
                     <p className="truncate text-small text-ink-3">{row.client.sector} · {prettyUrl(row.site.url)}</p>
                   </div>
-                  <div className="col-span-3 col-start-2 row-start-2 flex flex-wrap gap-x-4 gap-y-1 text-small text-ink-3 md:col-span-1 md:col-start-auto md:row-start-auto">
+                  <div className="col-span-3 col-start-2 row-start-2 flex flex-wrap gap-x-4 gap-y-1 text-small text-ink-3 md:col-span-1 md:col-start-auto md:row-start-auto md:w-20 md:justify-end">
                     <span>{row.manager.name}</span>
                     <span>Client since {formatPeriod(row.client.since)}</span>
                   </div>
@@ -47,7 +47,7 @@ export default function ClientsPage() {
                       </>
                     )}
                   </div>
-                  <div className="col-start-3 row-start-1 flex items-center gap-2 md:col-start-auto">
+                  <div className="col-start-3 row-start-1 flex items-center gap-2 md:col-start-auto md:row-start-auto md:w-20 md:justify-end">
                     {row.client.autoSend && <span title="Auto-send on" className="flex size-6 items-center justify-center rounded-sm bg-accent-soft text-accent"><Lightning size={13} weight="fill" aria-hidden /><span className="sr-only">Auto-send on</span></span>}
                     {row.client.aiEnabled && <span title="AI wording on" className="flex size-6 items-center justify-center rounded-sm bg-sunken text-ink-3"><Sparkle size={13} weight="fill" aria-hidden /><span className="sr-only">AI wording on</span></span>}
                     <CaretRight size={14} className="text-ink-4 transition-transform duration-(--duration-fast) group-hover:translate-x-0.5" aria-hidden />
