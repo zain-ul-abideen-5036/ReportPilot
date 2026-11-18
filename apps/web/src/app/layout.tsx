@@ -1,16 +1,15 @@
 import type { Metadata, Viewport } from "next";
-import { Geist, Geist_Mono, Newsreader } from "next/font/google";
+import { Fraunces, Geist_Mono, Hanken_Grotesk } from "next/font/google";
 import "./globals.css";
-import { themeBootScript } from "@/components/shell/ThemeSwitch";
 
-const geist = Geist({ subsets: ["latin"], variable: "--font-geist", display: "swap" });
+const hanken = Hanken_Grotesk({ subsets: ["latin"], variable: "--font-hanken", display: "swap" });
 const geistMono = Geist_Mono({ subsets: ["latin"], variable: "--font-geist-mono", display: "swap" });
-const newsreader = Newsreader({
+const fraunces = Fraunces({
   subsets: ["latin"],
-  variable: "--font-newsreader",
+  variable: "--font-fraunces",
   display: "swap",
   style: ["normal", "italic"],
-  axes: ["opsz"],
+  axes: ["SOFT", "WONK", "opsz"],
 });
 
 export const metadata: Metadata = {
@@ -28,17 +27,14 @@ export const metadata: Metadata = {
 
 export const viewport: Viewport = {
   themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#f5f3ee" },
-    { media: "(prefers-color-scheme: dark)", color: "#121412" },
+    { color: "#f6f2ea" },
   ],
+  colorScheme: "light",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en-GB" className={`${geist.variable} ${geistMono.variable} ${newsreader.variable}`} suppressHydrationWarning>
-      <head>
-        <script dangerouslySetInnerHTML={{ __html: themeBootScript }} />
-      </head>
+    <html lang="en-GB" className={`${hanken.variable} ${geistMono.variable} ${fraunces.variable}`}>
       <body>{children}</body>
     </html>
   );

@@ -8,7 +8,6 @@ import {
 } from "@phosphor-icons/react";
 import { NAV, isActive, type NavItem } from "./nav";
 import { Logo } from "./Logo";
-import { ThemeSwitch } from "./ThemeSwitch";
 import { cn } from "@/lib/cn";
 
 const ICONS: Record<NavItem["icon"], typeof Bell> = {
@@ -49,7 +48,7 @@ function NavLinks({ badges, pathname, onNavigate }: { badges: SidebarProps["badg
               <span
                 aria-hidden
                 className={cn(
-                  "absolute inset-y-2 left-0 w-0.5 origin-center rounded-full bg-accent transition-transform duration-(--duration-fast) ease-(--ease-standard)",
+                  "absolute inset-y-2 left-0 w-[3px] origin-center rounded-full bg-brand transition-transform duration-(--duration-fast) ease-(--ease-standard)",
                   active ? "scale-y-100" : "scale-y-0 group-hover:scale-y-50",
                 )}
               />
@@ -81,7 +80,7 @@ function CycleMeter({ cycle }: { cycle: SidebarProps["cycle"] }) {
       </div>
       <div className="mt-2 h-1 overflow-hidden rounded-full bg-line">
         <div
-          className="h-full origin-left rounded-full bg-accent transition-transform duration-(--duration-settle) ease-(--ease-standard)"
+          className="h-full origin-left rounded-full bg-brand transition-transform duration-(--duration-settle) ease-(--ease-standard)"
           style={{ transform: `scaleX(${pct})` }}
         />
       </div>
@@ -129,7 +128,6 @@ export function Sidebar({ orgName, user, badges, cycle }: SidebarProps) {
       </nav>
       <div className="mt-auto flex flex-col gap-3 p-3">
         <CycleMeter cycle={cycle} />
-        <ThemeSwitch />
         <div className="flex items-center gap-2.5 px-1">
           <span className="flex size-7 items-center justify-center rounded-full bg-accent-soft text-micro font-semibold text-accent">{user.initials}</span>
           <span className="min-w-0 flex-1">
