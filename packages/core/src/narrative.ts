@@ -27,9 +27,8 @@ export function templateNarrative(report: ReportData): Narrative {
   const opening = needsAction.length === 0
     ? `${month} was a steady month for ${site}.`
     : `${month} needs attention on ${site}: ${needsAction.join(" and ")}.`;
-  const lead = highlights[0] ? ` ${highlights[0]}` : "";
   return {
-    summary: `${opening}${lead}`,
+    summary: `${opening} ${statusSentence(lights)}`,
     highlights,
     recommendations: report.findings
       .map((f) => f.action)
@@ -37,6 +36,23 @@ export function templateNarrative(report: ReportData): Narrative {
       .slice(0, 5),
     source: "template",
   };
+}
+
+const AREA_NAME = { search: "search", speed: "speed", reliability: "reliability" } as const;
+
+/** "Search and speed are on track; reliability needs watching." */
+export function statusSentence(lights: ReportData["status"]): string {
+  const groups: Record<string, string[]> = { good: [], watch: [], act: [], unknown: [] };
+  for (const [area, light] of Object.entries(lights)) groups[light]!.push(AREA_NAME[area as keyof typeof AREA_NAME]);
+  const join = (xs: string[]) => (xs.length <= 1 ? xs.join("") : `${xs.slice(0, -1).join(", ")} and ${xs.at(-1)}`);
+  const verb = (xs: string[]) => (xs.length === 1 ? "is" : "are");
+  const parts: string[] = [];
+  if (groups.good!.length) parts.push(`${join(groups.good!)} ${verb(groups.good!)} on track`);
+  if (groups.watch!.length) parts.push(`${join(groups.watch!)} ${groups.watch!.length === 1 ? "needs" : "need"} watching`);
+  if (groups.act!.length) parts.push(`${join(groups.act!)} ${groups.act!.length === 1 ? "needs" : "need"} action`);
+  if (groups.unknown!.length) parts.push(`${join(groups.unknown!)} had no data`);
+  const sentence = parts.join("; ");
+  return `${sentence.charAt(0).toUpperCase()}${sentence.slice(1)}.`;
 }
 
 /**
