@@ -37,7 +37,7 @@ export default async function ReportsPage({ searchParams }: { searchParams: Prom
           description="Generated on the 3rd of each month once Search Console marks the month final. Nothing reaches a client until someone approves it, unless auto-send is on."
         />
 
-        <nav aria-label="Filter by status" className="-mx-1 mb-8 flex gap-1 overflow-x-auto border-b border-line pb-px [scrollbar-width:none]">
+        <nav aria-label="Filter by status" className="-mx-1 mb-8 flex max-w-full gap-1 overflow-x-auto border-b border-line pb-px [scrollbar-width:none]">
           {[null, ...GROUP_ORDER].map((s) => {
             const active = filter === s;
             const n = s ? counts[s] : rows.length;
@@ -70,7 +70,7 @@ export default async function ReportsPage({ searchParams }: { searchParams: Prom
                   <h2 id={`g-${g.status}`} className="text-body font-semibold text-ink">{STATUS_LABEL[g.status]}</h2>
                   <span className="text-small text-ink-3">{STATUS_HINT[g.status]}</span>
                 </div>
-                <ul className="stagger grid gap-3 md:grid-cols-2">
+                <ul className="stagger grid grid-cols-1 gap-3 md:grid-cols-2">
                   {g.rows.map((row) => (
                     <li key={row.site.id}>
                       <Link href={`/reports/${row.site.id}`} className="group press flex h-full flex-col rounded-lg bg-raised p-5 shadow-raised hover:shadow-sheet">

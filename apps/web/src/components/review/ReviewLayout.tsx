@@ -29,7 +29,7 @@ export function ReviewLayout({ preview, panel, pageNav }: { preview: React.React
           </button>
         ))}
       </div>
-      <div className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_360px] xl:gap-14">
+      <div className="grid grid-cols-1 gap-10 lg:grid-cols-[minmax(0,1fr)_360px] xl:gap-14">
         <div className={cn("min-w-0", tab !== "preview" && "hidden lg:block")}>
           {pageNav}
           <div className="rounded-lg bg-sunken p-3 sm:p-6 lg:p-8">{preview}</div>

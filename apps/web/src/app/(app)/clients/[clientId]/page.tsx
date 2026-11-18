@@ -52,7 +52,7 @@ export default async function ClientPage({ params }: { params: Promise<{ clientI
           actions={<ButtonLink href={`/reports/${row.site.id}`} variant="primary">Open {formatPeriodShort(period)} report<ArrowRight size={15} aria-hidden /></ButtonLink>}
         />
 
-        <div className="grid gap-12 lg:grid-cols-[minmax(0,1fr)_300px]">
+        <div className="grid grid-cols-1 gap-12 lg:grid-cols-[minmax(0,1fr)_300px]">
           <div className="min-w-0">
             {s && (
               <section aria-labelledby="kpi-heading">

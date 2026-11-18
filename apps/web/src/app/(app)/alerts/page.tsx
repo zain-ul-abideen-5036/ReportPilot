@@ -38,7 +38,7 @@ export default function AlertsPage() {
           title="Alerts"
           description={`${open} open. Problems are caught when they happen, not at the end of the month. Alerts go to the account manager by email as they are raised.`}
         />
-        <div className="grid gap-12 lg:grid-cols-[minmax(0,1fr)_280px]">
+        <div className="grid grid-cols-1 gap-12 lg:grid-cols-[minmax(0,1fr)_280px]">
           <div className="min-w-0"><AlertList initial={alerts} /></div>
           <aside className="lg:pt-12">
             <h2 className="mb-3 text-small font-semibold text-ink">When an alert is raised</h2>

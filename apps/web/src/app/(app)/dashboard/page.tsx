@@ -59,8 +59,8 @@ export default function OverviewPage() {
 
         <CycleBand counts={counts} />
 
-        <div className="mt-12 grid gap-x-12 gap-y-12 lg:grid-cols-[minmax(0,1fr)_320px]">
-          <section aria-labelledby="queue-heading">
+        <div className="mt-12 grid grid-cols-1 gap-x-12 gap-y-12 lg:grid-cols-[minmax(0,1fr)_320px]">
+          <section aria-labelledby="queue-heading" className="min-w-0">
             <SectionHeading id="queue-heading" title="Needs you" meta={`${queue.length} items`} />
             <Queue items={queue} />
           </section>

@@ -42,7 +42,7 @@ export function BrandingStudio({ initial, sample }: Props) {
   const initials = brand.name.split(/\s+/).map((w) => w[0]).join("").slice(0, 2).toUpperCase();
 
   return (
-    <div className="grid gap-10 lg:grid-cols-[360px_minmax(0,1fr)] xl:gap-14">
+    <div className="grid grid-cols-1 gap-10 lg:grid-cols-[360px_minmax(0,1fr)] xl:gap-14">
       <form
         className="flex flex-col gap-8"
         onSubmit={(e) => {
