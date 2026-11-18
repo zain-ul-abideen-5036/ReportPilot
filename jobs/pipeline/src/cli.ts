@@ -57,7 +57,12 @@ async function main() {
           dryRun: true,
           sleep: async () => {},
         }, { siteId: values.site });
-        console.log(`\nDemo run complete: ${summary.sites} reports, PDFs in output/reports/, email previews in output/emails/.`);
+        if (summary.failed > 0) {
+          console.error(`\nDemo run finished with ${summary.failed} of ${summary.sites} reports failed. See the log lines above.`);
+          process.exitCode = 1;
+        } else {
+          console.log(`\nDemo run complete: ${summary.sites} reports. PDFs in output/reports/, email previews in output/emails/.`);
+        }
       } finally {
         await browser.close();
       }
