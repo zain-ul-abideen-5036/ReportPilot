@@ -26,8 +26,8 @@ export const REPORT_CSS = /* css */ `
   --chart-warn: var(--rp-watch);
   --chart-bad: var(--rp-act);
   --chart-bg: #ffffff;
-  --rp-serif: var(--font-newsreader, "Newsreader"), Georgia, "Times New Roman", serif;
-  --rp-sans: var(--font-geist, "Geist"), "Helvetica Neue", Arial, sans-serif;
+  --rp-serif: var(--font-fraunces, "Fraunces"), Georgia, "Times New Roman", serif;
+  --rp-sans: var(--font-hanken, "Hanken Grotesk"), "Helvetica Neue", Arial, sans-serif;
   color: var(--rp-ink);
   font-family: var(--rp-sans);
   font-size: 10.5px;

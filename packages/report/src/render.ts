@@ -10,7 +10,7 @@ import type { ReportInput } from "./types";
  */
 
 const FONTS =
-  "https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&display=block";
+  "https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght,SOFT@0,9..144,400..600,60;1,9..144,400,60&family=Hanken+Grotesk:wght@400;500;600;700&display=block";
 
 export function renderReportHtml(input: ReportInput): string {
   const body = renderToStaticMarkup(createElement(ReportDocument, input));
