@@ -1,0 +1,21 @@
+# Cloudflare Worker: uptime checks every five minutes, nightly rollup.
+# Free plan: 100,000 requests a day. 50 sites x 288 checks = 14,400.
+name = "reportpilot-uptime"
+main = "src/index.ts"
+compatibility_date = "2026-10-01"
+compatibility_flags = ["nodejs_compat"]
+
+[triggers]
+crons = ["*/5 * * * *", "10 0 * * *"]
+
+[vars]
+ALERT_FROM = "alerts@reportpilot.app"
+RECHECK_DELAY_MS = "30000"
+
+# Secrets (set with `wrangler secret put`):
+#   DATABASE_URL   Postgres connection string (use the pooled URL)
+#   RESEND_API_KEY Email for downtime alerts
+#   ALERT_TO       Fallback recipient when a site has no account manager
+
+[observability]
+enabled = true
