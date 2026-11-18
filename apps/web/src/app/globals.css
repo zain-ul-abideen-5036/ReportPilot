@@ -221,3 +221,37 @@
     scroll-behavior: auto !important;
   }
 }
+
+/* Chart tokens: charts read these, so the PDF can rebrand them. */
+:root {
+  --chart-line: var(--accent);
+  --chart-secondary: var(--ink-3);
+  --chart-ghost: var(--ink-4);
+  --chart-grid: var(--line);
+  --chart-label: var(--ink-3);
+  --chart-ok: var(--good);
+  --chart-warn: var(--watch);
+  --chart-bad: var(--act);
+  --chart-bg: var(--surface);
+}
+
+/* Entrance choreography: children of .stagger enter 40ms apart. */
+.stagger > * { animation: var(--animate-enter); }
+.stagger > *:nth-child(2) { animation-delay: 40ms; }
+.stagger > *:nth-child(3) { animation-delay: 80ms; }
+.stagger > *:nth-child(4) { animation-delay: 120ms; }
+.stagger > *:nth-child(5) { animation-delay: 160ms; }
+.stagger > *:nth-child(6) { animation-delay: 200ms; }
+.stagger > *:nth-child(n + 7) { animation-delay: 240ms; }
+
+/* Lines draw in once when a chart first renders. */
+.draw path[stroke]:not([stroke-dasharray]) {
+  stroke-dasharray: 1200;
+  stroke-dashoffset: 1200;
+  animation: draw 900ms var(--ease-standard) 120ms forwards;
+}
+@keyframes draw { to { stroke-dashoffset: 0; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .draw path[stroke] { stroke-dashoffset: 0 !important; stroke-dasharray: none !important; }
+}
