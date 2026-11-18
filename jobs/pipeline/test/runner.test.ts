@@ -112,7 +112,7 @@ describe("monthly pipeline", () => {
   it("waits when Search Console has not finalised the month", async () => {
     const s = site("site_harlow");
     const base = demoCollectors(DEMO_PERIOD);
-    const collectors = { ...base, gsc: { ...base.gsc!, isMonthFinal: async () => false } as typeof base.gsc };
+    const collectors = { ...base, gsc: Object.assign(Object.create(base.gsc!), { isMonthFinal: async () => false }) as typeof base.gsc };
     const { deps } = setup({ collectors }, [s]);
     const r = await runSite(s, DEMO_PERIOD, deps);
     expect(r.status).toBe("collecting");
