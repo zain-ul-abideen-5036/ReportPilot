@@ -1,0 +1,31 @@
+name: Deploy uptime worker
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "workers/uptime/**"
+      - "packages/core/src/uptime.ts"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    if: ${{ vars.DEPLOY_WORKER == 'true' }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npx vitest run workers
+      - name: Deploy with Wrangler
+        run: npx wrangler@4 deploy
+        working-directory: workers/uptime
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
