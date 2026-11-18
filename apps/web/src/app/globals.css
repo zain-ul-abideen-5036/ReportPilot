@@ -258,7 +258,7 @@
 }
 
 /* A slow, drifting glow behind hero areas. Transform-only, off under reduced motion. */
-.glow { position: relative; isolation: isolate; }
+.glow { position: relative; isolation: isolate; overflow-x: clip; }
 .glow::before {
   content: "";
   position: absolute;
