@@ -1,0 +1,15 @@
+{
+  "record": {
+    "key": { "origin": "https://www.example.test", "formFactor": "PHONE" },
+    "collectionPeriods": [
+      { "firstDate": { "year": 2026, "month": 9, "day": 7 }, "lastDate": { "year": 2026, "month": 10, "day": 4 } },
+      { "firstDate": { "year": 2026, "month": 9, "day": 14 }, "lastDate": { "year": 2026, "month": 10, "day": 11 } },
+      { "firstDate": { "year": 2026, "month": 9, "day": 21 }, "lastDate": { "year": 2026, "month": 10, "day": 18 } }
+    ],
+    "metrics": {
+      "largest_contentful_paint": { "percentilesTimeseries": { "p75s": [2510, 2440, 2390] } },
+      "interaction_to_next_paint": { "percentilesTimeseries": { "p75s": [171, null, 158] } },
+      "cumulative_layout_shift": { "percentilesTimeseries": { "p75s": ["0.06", "0.05", "NaN"] } }
+    }
+  }
+}

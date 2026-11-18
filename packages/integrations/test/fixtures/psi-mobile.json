@@ -1,0 +1,21 @@
+{
+  "lighthouseResult": {
+    "categories": { "performance": { "score": 0.71 } },
+    "audits": {
+      "largest-contentful-paint": { "numericValue": 3184.6 },
+      "cumulative-layout-shift": { "numericValue": 0.0421 },
+      "total-blocking-time": { "numericValue": 268.2 },
+      "render-blocking-resources": { "title": "Eliminate render-blocking resources", "details": { "type": "opportunity", "overallSavingsMs": 610 } },
+      "unused-javascript": { "title": "Reduce unused JavaScript", "details": { "type": "opportunity", "overallSavingsMs": 1240 } },
+      "uses-text-compression": { "title": "Enable text compression", "details": { "type": "opportunity", "overallSavingsMs": 0 } },
+      "font-display": { "title": "All text remains visible during webfont loads", "details": { "type": "table" } }
+    }
+  },
+  "loadingExperience": {
+    "metrics": {
+      "LARGEST_CONTENTFUL_PAINT_MS": { "percentile": 2380 },
+      "INTERACTION_TO_NEXT_PAINT": { "percentile": 164 },
+      "CUMULATIVE_LAYOUT_SHIFT_SCORE": { "percentile": 4 }
+    }
+  }
+}
