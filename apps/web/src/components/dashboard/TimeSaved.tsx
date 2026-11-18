@@ -35,7 +35,7 @@ export function TimeSaved({ history, sites }: Props) {
         <div className="flex h-20 items-end gap-2" role="img" aria-label={history.map((h) => `${formatPeriodShort(h.period)}: ${h.onTime} on time, ${h.late} late`).join("; ")}>
           {history.map((h, i) => (
             <div key={h.period} className="flex flex-1 flex-col items-center gap-1.5">
-              <div className="flex w-full flex-1 flex-col justify-end gap-px">
+              <div className="flex h-16 w-full flex-col justify-end gap-px">
                 {h.late > 0 && <div className="w-full rounded-t-[2px] bg-watch origin-bottom animate-[grow_600ms_var(--ease-standard)_both]" style={{ height: `${(h.late / max) * 100}%`, animationDelay: `${i * 50}ms` }} />}
                 <div className={`w-full bg-accent origin-bottom animate-[grow_600ms_var(--ease-standard)_both] ${h.late ? "" : "rounded-t-[2px]"} ${i === history.length - 1 ? "opacity-50" : ""}`} style={{ height: `${(h.onTime / max) * 100}%`, animationDelay: `${i * 50}ms` }} />
               </div>
