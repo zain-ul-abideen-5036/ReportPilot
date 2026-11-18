@@ -262,8 +262,8 @@
 .glow::before {
   content: "";
   position: absolute;
-  inset: -12% -8% auto;
-  height: 120%;
+  inset: -40% -12% auto;
+  height: 180%;
   background: var(--grad-glow);
   filter: blur(8px);
   z-index: -1;
