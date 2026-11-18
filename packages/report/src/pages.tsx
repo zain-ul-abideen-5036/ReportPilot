@@ -323,8 +323,8 @@ export function Speed({ ctx }: { ctx: ReportContext }) {
             </table>
           </div>
 
-          <div className="rp-section" style={{ marginTop: "auto" }}>
-            <h3 className="rp-h3">Top speed opportunities</h3>
+          <div className="rp-section">
+            <h3 className="rp-h3">Top speed opportunities <span>estimated saving in load time</span></h3>
             {sp.opportunities.length ? (
               <table className="rp-table">
                 <tbody>
