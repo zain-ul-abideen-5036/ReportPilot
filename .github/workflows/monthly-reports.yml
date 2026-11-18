@@ -59,7 +59,7 @@ jobs:
           # Without a database configured, fall back to the demo agency so the workflow is runnable on a fork.
           if [ -z "$DATABASE_URL" ]; then ARGS="$ARGS --demo"; fi
           npx tsx jobs/pipeline/src/cli.ts monthly $ARGS
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         if: always()
         with:
           name: reports-${{ github.run_id }}
