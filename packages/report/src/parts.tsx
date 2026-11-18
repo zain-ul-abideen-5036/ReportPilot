@@ -4,7 +4,7 @@ import type { ReportContext } from "./types";
 /** Running header and footer on every inner page. */
 export function Page({ ctx, folio, children, className = "" }: { ctx: ReportContext; folio: number; children: React.ReactNode; className?: string }) {
   return (
-    <section className={`rp-page ${className}`} aria-label={`Page ${folio}`}>
+    <section id={`page-${folio}`} className={`rp-page ${className}`} aria-label={`Page ${folio}`}>
       <div className="rp-runhead">
         <span>{ctx.client.name} · {ctx.monthLabel}</span>
         <span>{ctx.org.name}</span>

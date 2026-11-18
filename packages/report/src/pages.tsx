@@ -21,7 +21,7 @@ function kpiValue(k: Kpi): string {
 
 export function Cover({ ctx }: { ctx: ReportContext }) {
   return (
-    <section className="rp-page rp-cover" aria-label="Cover">
+    <section id="page-1" className="rp-page rp-cover" aria-label="Cover">
       <div className="rp-cover-band" />
       <div className="rp-cover-inner">
         <div className="rp-cover-brand">
