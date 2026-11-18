@@ -20,8 +20,8 @@ carry the weight.
 
 | Role | Face | Notes |
 | --- | --- | --- |
-| Display and big figures | Newsreader | Optical sizes; italic for emphasis and section numbers |
-| Interface and body | Geist | 400, 500 and 600 |
+| Display and big figures | Fraunces | Variable, with optical size and the SOFT axis set to 60 for a warm, rounded serif; the WONK italic marks emphasis |
+| Interface and body | Hanken Grotesk | 400, 500, 600 and 700 |
 | Code and identifiers | Geist Mono | Property ids, paths |
 
 Scale: micro 11, small 13, body 14, lead 16, title 22, headline 32, figure
@@ -29,15 +29,24 @@ Scale: micro 11, small 13, body 14, lead 16, title 22, headline 32, figure
 
 ## Colour
 
-One accent and one grey family. Tokens live in `apps/web/src/app/globals.css`.
+One theme, "Paper & Pine": a single light palette, deliberately not
+switchable, so every screen and every screenshot is the designed one. Tokens
+live in `apps/web/src/app/globals.css`.
 
-| Token | Light | Dark | Use |
-| --- | --- | --- | --- |
-| `paper` | `#f5f3ee` | `#121412` | Page ground |
-| `raised` | `#ffffff` | `#1c201d` | Cards, inputs |
-| `ink` | `#191c1a` | `#ebece7` | Text |
-| `accent` | `#1f4d3f` | `#8cc2a9` | Primary actions, active state, chart lines |
-| `good` / `watch` / `act` | green / amber / red | lighter equivalents | Status, always with an icon |
+| Token | Value | Use |
+| --- | --- | --- |
+| `paper` | `#f6f2ea` | Page ground, with a faint SVG grain |
+| `raised` | `#fffdf9` | Cards, inputs |
+| `ink` | `#17201c` | Text |
+| `accent` | `#1d4a3c` | Active state, links, chart lines |
+| `brass` / `copper` | `#b4813f` / `#c0683a` | Section numbers, emphasis, the warm end of the gradient |
+| `good` / `watch` / `act` | green / amber / red | Status, always with an icon |
+
+**Signature gradients.** Pine flowing into brass (`--grad-brand`) on primary
+buttons, the logo and the closing call to action; the same ramp as text
+(`.text-gradient`) on one emphasised word per page; a hairline version
+(`.rule-gradient`) above each landing chapter; and a soft apricot-and-sage
+glow (`.glow`) behind hero areas that drifts slowly. Never purple into blue.
 
 The client PDF uses the agency's own `primary` and `accent` instead, through
 `--rp-primary` and `--rp-accent`. The branding page warns when a primary
@@ -54,7 +63,9 @@ One easing curve, three durations, defined as tokens:
 | `--duration-fast` | 160 ms | Hover, focus, colour |
 | `--duration-settle` | 280 ms | Entrances, panels, drawer |
 
-Only `transform` and `opacity` are animated. The landing page reveals
+Only `transform` and `opacity` are animated. Beyond state changes, the
+landing page uses a drifting glow, floating proof chips, count-up figures, a
+report token travelling along the pipeline track and a slow marquee. The landing page reveals
 sections with CSS scroll timelines, with no scroll listeners. Under
 `prefers-reduced-motion` durations collapse to near zero and everything
 lands in its final state; an end-to-end test asserts headings are fully
