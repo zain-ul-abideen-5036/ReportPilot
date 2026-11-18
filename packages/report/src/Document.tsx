@@ -22,7 +22,7 @@ export function ReportDocument(input: ReportInput & { id?: string; gap?: number;
   return (
     <article className="rp" id={input.id} style={style} lang="en-GB">
       <style>{REPORT_CSS}</style>
-      {PAGES.slice(0, input.limit ?? PAGES.length).map((P) => <P key={P.name} ctx={ctx} />)}
+      {PAGES.slice(0, input.limit ?? PAGES.length).map((P, i) => <P key={i} ctx={ctx} />)}
     </article>
   );
 }
