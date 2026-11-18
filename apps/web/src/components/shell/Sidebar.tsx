@@ -48,7 +48,7 @@ function NavLinks({ badges, pathname, onNavigate }: { badges: SidebarProps["badg
               <span
                 aria-hidden
                 className={cn(
-                  "absolute inset-y-2 left-0 w-0.5 origin-center rounded-full bg-accent transition-transform duration-[--duration-fast] ease-[--ease-standard]",
+                  "absolute inset-y-2 left-0 w-0.5 origin-center rounded-full bg-accent transition-transform duration-(--duration-fast) ease-(--ease-standard)",
                   active ? "scale-y-100" : "scale-y-0 group-hover:scale-y-50",
                 )}
               />
@@ -80,7 +80,7 @@ function CycleMeter({ cycle }: { cycle: SidebarProps["cycle"] }) {
       </div>
       <div className="mt-2 h-1 overflow-hidden rounded-full bg-line">
         <div
-          className="h-full origin-left rounded-full bg-accent transition-transform duration-[--duration-settle] ease-[--ease-standard]"
+          className="h-full origin-left rounded-full bg-accent transition-transform duration-(--duration-settle) ease-(--ease-standard)"
           style={{ transform: `scaleX(${pct})` }}
         />
       </div>
@@ -146,7 +146,7 @@ export function Sidebar({ orgName, user, badges, cycle }: SidebarProps) {
       <aside className="sticky top-0 hidden h-dvh w-60 shrink-0 flex-col border-r border-line bg-surface lg:flex">{body}</aside>
 
       {/* Mobile and tablet: top bar with a drawer */}
-      <div className="sticky top-0 z-[--z-sticky] flex h-14 items-center justify-between border-b border-line bg-surface/90 px-4 backdrop-blur-md lg:hidden">
+      <div className="sticky top-0 z-(--z-sticky) flex h-14 items-center justify-between border-b border-line bg-surface/90 px-4 backdrop-blur-md lg:hidden">
         <Link href="/dashboard" aria-label="ReportPilot overview"><Logo /></Link>
         <button
           type="button"
@@ -161,7 +161,7 @@ export function Sidebar({ orgName, user, badges, cycle }: SidebarProps) {
       </div>
       <div
         className={cn(
-          "fixed inset-0 z-[--z-overlay] bg-ink/30 backdrop-blur-[2px] transition-opacity duration-[--duration-settle] ease-[--ease-standard] lg:hidden",
+          "fixed inset-0 z-(--z-overlay) bg-ink/30 backdrop-blur-[2px] transition-opacity duration-(--duration-settle) ease-(--ease-standard) lg:hidden",
           open ? "opacity-100" : "pointer-events-none opacity-0",
         )}
         onClick={() => setOpen(false)}
@@ -172,7 +172,7 @@ export function Sidebar({ orgName, user, badges, cycle }: SidebarProps) {
         aria-label="Menu"
         inert={!open}
         className={cn(
-          "fixed inset-y-0 left-0 z-[--z-overlay] flex w-72 max-w-[85vw] flex-col bg-surface shadow-sheet transition-transform duration-[--duration-settle] ease-[--ease-standard] lg:hidden",
+          "fixed inset-y-0 left-0 z-(--z-overlay) flex w-72 max-w-[85vw] flex-col bg-surface shadow-sheet transition-transform duration-(--duration-settle) ease-(--ease-standard) lg:hidden",
           open ? "translate-x-0" : "-translate-x-full",
         )}
       >

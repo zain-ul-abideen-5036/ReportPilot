@@ -8,7 +8,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   const openAlerts = listAlerts().filter((a) => a.state === "open").length;
   return (
     <div className="min-h-dvh lg:flex">
-      <a href="#main" className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-[--z-toast] focus:rounded-md focus:bg-raised focus:px-3 focus:py-2 focus:shadow-raised">
+      <a href="#main" className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-(--z-toast) focus:rounded-md focus:bg-raised focus:px-3 focus:py-2 focus:shadow-raised">
         Skip to content
       </a>
       <Sidebar

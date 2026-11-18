@@ -30,7 +30,7 @@ export function Topbar({ crumbs, period }: { crumbs: Crumb[]; period: string }) 
           <CalendarBlank size={14} className="text-ink-3" aria-hidden />
           {formatPeriod(period)} cycle
         </span>
-        <label className="group hidden h-8 w-56 items-center gap-2 rounded-md bg-raised px-2.5 text-small text-ink-3 hairline transition-shadow duration-[--duration-fast] focus-within:shadow-[inset_0_0_0_1px_var(--accent)] md:flex">
+        <label className="group hidden h-8 w-56 items-center gap-2 rounded-md bg-raised px-2.5 text-small text-ink-3 hairline transition-shadow duration-(--duration-fast) focus-within:shadow-[inset_0_0_0_1px_var(--accent)] md:flex">
           <MagnifyingGlass size={14} aria-hidden />
           <input
             type="search"
