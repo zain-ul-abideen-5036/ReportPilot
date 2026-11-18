@@ -6,6 +6,8 @@ const config: NextConfig = {
   transpilePackages: ["@reportpilot/core", "@reportpilot/demo", "@reportpilot/charts", "@reportpilot/report"],
   poweredByHeader: false,
   devIndicators: false,
+  // Playwright ships a browser binary; keep it out of the server bundle.
+  serverExternalPackages: ["playwright", "playwright-core"],
   async headers() {
     return [
       {
