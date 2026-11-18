@@ -30,9 +30,10 @@ export function Monogram({ name, initials, size = "md", shape = "square", classN
         className,
       )}
       style={{
-        background: `oklch(0.93 0.035 ${hue})`,
-        color: `oklch(0.38 0.07 ${hue})`,
-        boxShadow: `inset 0 0 0 1px oklch(0.85 0.05 ${hue} / 0.6)`,
+        // light-dark() follows the page's color-scheme, so marks re-tone in dark mode.
+        background: `light-dark(oklch(0.93 0.035 ${hue}), oklch(0.3 0.045 ${hue}))`,
+        color: `light-dark(oklch(0.38 0.07 ${hue}), oklch(0.86 0.06 ${hue}))`,
+        boxShadow: `inset 0 0 0 1px light-dark(oklch(0.85 0.05 ${hue} / 0.6), oklch(0.42 0.05 ${hue} / 0.7))`,
       }}
     >
       {initials}
