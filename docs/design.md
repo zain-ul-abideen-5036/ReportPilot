@@ -12,9 +12,10 @@ carry the weight.
    label, so it survives colour-blindness and greyscale print.
 3. **Most things are not cards.** Sections are a heading and a hairline.
    Cards are reserved for discrete objects: a report, an alert, a table.
-4. **Motion carries information or it goes.** A rail slides to show where
-   you are, a press scales to show it registered, a chart draws once to show
-   it is data. Nothing loops.
+4. **Motion carries information or atmosphere, never noise.** In the app a
+   rail slides to show where you are, a press scales to show it registered,
+   a chart draws once to show it is data. Slow ambient loops live only on the
+   landing page, and every one of them stops under reduced motion.
 
 ## Type
 
