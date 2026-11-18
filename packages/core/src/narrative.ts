@@ -26,7 +26,7 @@ export function templateNarrative(report: ReportData): Narrative {
   const needsAction = Object.entries(lights).filter(([, l]) => l === "act").map(([k]) => k);
   const opening = needsAction.length === 0
     ? `${month} was a steady month for ${site}.`
-    : `${month} needs attention on ${site}: ${needsAction.join(" and ")}.`;
+    : `${month} needs attention on ${site}.`;
   return {
     summary: `${opening} ${statusSentence(lights)}`,
     highlights,
