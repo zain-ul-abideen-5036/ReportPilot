@@ -12,8 +12,10 @@ import { createRequire } from "node:module";
 const base = process.argv[2] ?? "http://localhost:3100";
 const out = "docs/screenshots";
 
-// The README banner: a 16:9 frame, which is exactly one hero.
-const hero = { name: "hero", path: "/", width: 1440, height: 810 };
+// The README banner: a 16:9 frame laid out at 1228 px, the width a 1920 px
+// screen gives at 125% scaling and 125% zoom, so the headline sits on three
+// lines and the content fills the frame. Rendered at 1920 x 1080.
+const hero = { name: "hero", path: "/", width: 1228, height: 691, scale: 1920 / 1228 };
 
 const desktop = [
   { name: "overview", path: "/dashboard", height: 1000 },
@@ -35,7 +37,7 @@ await mkdir(out, { recursive: true });
 const browser = await chromium.launch();
 
 {
-  const c = await browser.newContext({ viewport: { width: hero.width, height: hero.height }, deviceScaleFactor: 1.5, reducedMotion: "reduce" });
+  const c = await browser.newContext({ viewport: { width: hero.width, height: hero.height }, deviceScaleFactor: hero.scale, reducedMotion: "reduce" });
   const page = await c.newPage();
   await page.goto(base + hero.path, { waitUntil: "networkidle" });
   await page.evaluate(() => document.fonts.ready);
