@@ -7,7 +7,7 @@ const config: NextConfig = {
   // two overwriting each other's output: NEXT_DIST_DIR=.next-prod npm run build
   distDir: process.env.NEXT_DIST_DIR ?? ".next",
   // Workspace packages ship TypeScript source; Next compiles them.
-  transpilePackages: ["@reportpilot/core", "@reportpilot/demo", "@reportpilot/charts", "@reportpilot/report"],
+  transpilePackages: ["@reportpilot/core", "@reportpilot/demo", "@reportpilot/charts", "@reportpilot/report", "@reportpilot/db", "@reportpilot/integrations"],
   poweredByHeader: false,
   devIndicators: false,
   // Playwright ships a browser binary; keep it out of the server bundle.
