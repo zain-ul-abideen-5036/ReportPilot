@@ -1,7 +1,9 @@
 "use client";
 
-import { useState } from "react";
-import { Check, UploadSimple } from "@phosphor-icons/react";
+import { useRef, useState, useTransition } from "react";
+import { Check, UploadSimple, X } from "@phosphor-icons/react";
+import { saveBrand } from "@/lib/actions";
+import { downscaleLogo } from "@/lib/logo";
 import type { Narrative, ReportData } from "@reportpilot/core";
 import { ReportDocument } from "@reportpilot/report";
 import { ScaledDocument } from "@/components/review/ScaledDocument";
@@ -30,13 +32,19 @@ function contrastOnWhite(hex: string): number {
 }
 
 interface Props {
-  initial: { name: string; primary: string; accent: string; senderName: string; senderEmail: string; footer: string };
+  initial: { name: string; primary: string; accent: string; senderName: string; senderEmail: string; footer: string; logoUrl: string | null };
+  canManage: boolean;
+  demo: boolean;
   sample: { report: ReportData; narrative: Narrative; client: string; preparedBy: string; generatedAt: string };
 }
 
-export function BrandingStudio({ initial, sample }: Props) {
+export function BrandingStudio({ initial, sample, canManage, demo }: Props) {
   const [brand, setBrand] = useState(initial);
   const [toast, setToast] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [logoChanged, setLogoChanged] = useState(false);
+  const [pending, start] = useTransition();
+  const fileInput = useRef<HTMLInputElement>(null);
   const set = <K extends keyof typeof brand>(k: K, v: (typeof brand)[K]) => setBrand((b) => ({ ...b, [k]: v }));
   const lowContrast = contrastOnWhite(brand.primary) < 4.5;
   const initials = brand.name.split(/\s+/).map((w) => w[0]).join("").slice(0, 2).toUpperCase();
@@ -47,7 +55,16 @@ export function BrandingStudio({ initial, sample }: Props) {
         className="flex flex-col gap-8"
         onSubmit={(e) => {
           e.preventDefault();
-          setToast("Brand saved. Next month's reports will use it.");
+          setError(null);
+          start(async () => {
+            const r = await saveBrand({
+              name: brand.name, primary: brand.primary, accent: brand.accent, senderName: brand.senderName, senderEmail: brand.senderEmail,
+              footer: brand.footer, ...(logoChanged && { logo: brand.logoUrl }),
+            });
+            if (!r.ok) return setError(r.error);
+            setLogoChanged(false);
+            setToast(demo && logoChanged ? "Brand saved. In the demo the logo stays in this preview only." : "Brand saved. Next month's reports will use it.");
+          });
         }}
       >
         <fieldset>
@@ -96,9 +113,37 @@ export function BrandingStudio({ initial, sample }: Props) {
         <fieldset className="flex flex-col gap-4">
           <legend className="mb-3 text-small font-semibold text-ink">Identity</legend>
           <div className="flex items-center gap-3">
-            <span className="flex size-12 items-center justify-center rounded-lg text-small font-bold text-white" style={{ background: brand.primary }}>{initials}</span>
-            <Button type="button" variant="secondary" size="sm"><UploadSimple size={14} aria-hidden />Upload logo</Button>
-            <span className="text-micro text-ink-3">SVG or PNG, at least 240 px</span>
+            {brand.logoUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element -- a data: URL preview, not a remote image
+              <img src={brand.logoUrl} alt="Agency logo" className="h-12 max-w-24 rounded-lg bg-raised object-contain p-1 hairline" />
+            ) : (
+              <span className="flex size-12 items-center justify-center rounded-lg text-small font-bold text-white" style={{ background: brand.primary }}>{initials}</span>
+            )}
+            <input
+              ref={fileInput}
+              type="file"
+              accept="image/png,image/jpeg,image/webp,image/svg+xml"
+              className="sr-only"
+              aria-label="Upload logo"
+              onChange={async (e) => {
+                const file = e.target.files?.[0];
+                e.target.value = "";
+                if (!file) return;
+                try {
+                  set("logoUrl", await downscaleLogo(file));
+                  setLogoChanged(true);
+                  setError(null);
+                } catch (err) {
+                  setError((err as Error).message);
+                }
+              }}
+            />
+            <Button type="button" variant="secondary" size="sm" onClick={() => fileInput.current?.click()}><UploadSimple size={14} aria-hidden />{brand.logoUrl ? "Replace" : "Upload logo"}</Button>
+            {brand.logoUrl ? (
+              <button type="button" onClick={() => { set("logoUrl", null); setLogoChanged(true); }} className="press flex size-8 items-center justify-center rounded-md text-ink-3 hover:bg-sunken" aria-label="Remove logo"><X size={14} /></button>
+            ) : (
+              <span className="text-micro text-ink-3">PNG, JPG or SVG; resized to 480 px</span>
+            )}
           </div>
           <Field label="Agency name" value={brand.name} onChange={(v) => set("name", v)} />
           <Field label="Footer line" value={brand.footer} onChange={(v) => set("footer", v)} hint="Printed at the foot of every page." />
@@ -110,9 +155,11 @@ export function BrandingStudio({ initial, sample }: Props) {
           <Field label="Sender address" value={brand.senderEmail} onChange={(v) => set("senderEmail", v)} type="email" hint="Verified with SPF, DKIM and DMARC so reports don't land in spam." />
         </fieldset>
 
+        {error && <p role="alert" className="rounded-md bg-act-soft p-3 text-small text-act">{error}</p>}
+        {!canManage && <p className="rounded-md bg-sunken p-3 text-small text-ink-2">Only the agency owner can save branding. You can still try colours in the preview.</p>}
         <div className="flex gap-2">
-          <Button type="submit" variant="primary">Save brand</Button>
-          <Button type="button" variant="quiet" onClick={() => setBrand(initial)}>Reset</Button>
+          <Button type="submit" variant="primary" disabled={pending || !canManage}>{pending ? "Saving…" : "Save brand"}</Button>
+          <Button type="button" variant="quiet" onClick={() => { setBrand(initial); setLogoChanged(false); }}>Reset</Button>
         </div>
       </form>
 
@@ -121,7 +168,7 @@ export function BrandingStudio({ initial, sample }: Props) {
           <span className="font-semibold text-ink">Live preview</span>
           <span className="text-ink-3">{sample.client}, cover and summary</span>
         </p>
-        <div className="rounded-lg bg-sunken p-4 sm:p-6 lg:min-h-0 lg:flex-1 lg:overflow-y-auto lg:overscroll-contain [scrollbar-width:thin]">
+        <div tabIndex={0} role="region" aria-label="Report preview" className="rounded-lg bg-sunken p-4 focus-visible:outline-2 focus-visible:outline-accent sm:p-6 lg:min-h-0 lg:flex-1 lg:overflow-y-auto lg:overscroll-contain [scrollbar-width:thin]">
           <ScaledDocument pages={2} gap={20}>
             <div className="[&_.rp-page]:rounded-[3px] [&_.rp-page]:shadow-sheet">
               <ReportDocument
@@ -129,7 +176,7 @@ export function BrandingStudio({ initial, sample }: Props) {
                 gap={20}
                 report={sample.report}
                 narrative={sample.narrative}
-                org={{ name: brand.name, primary: brand.primary, accent: brand.accent, footer: brand.footer, initials }}
+                org={{ name: brand.name, primary: brand.primary, accent: brand.accent, footer: brand.footer, initials, logoUrl: brand.logoUrl }}
                 client={{ name: sample.client }}
                 preparedBy={sample.preparedBy}
                 generatedAt={sample.generatedAt}
