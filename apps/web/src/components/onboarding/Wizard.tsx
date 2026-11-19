@@ -1,19 +1,28 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, ArrowRight, Check, CheckCircle, Copy, CircleNotch, FilePdf, Plus, X } from "@phosphor-icons/react";
+import { ArrowLeft, ArrowRight, Check, CheckCircle, Copy, CircleNotch, FilePdf, Plus, UploadSimple, X, WarningCircle } from "@phosphor-icons/react";
 import { Button, buttonClass } from "@/components/ui/Button";
+import { createClient, generateSample, testConnection } from "@/lib/actions";
+import { downscaleLogo } from "@/lib/logo";
 import { cn } from "@/lib/cn";
 
 const STEPS = ["Client", "Site", "Search Console", "First report"] as const;
-const SERVICE_ACCOUNT = "reports@reportpilot-prod.iam.gserviceaccount.com";
+const TIME_ZONES = [
+  "Europe/London", "Europe/Dublin", "Europe/Paris", "Europe/Berlin", "Europe/Madrid", "Asia/Dubai", "Asia/Karachi", "Asia/Kolkata",
+  "Asia/Singapore", "Australia/Sydney", "Pacific/Auckland", "America/New_York", "America/Chicago", "America/Denver", "America/Los_Angeles",
+];
+const REPORT_DAYS = [2, 3, 4, 5, 6, 7, 8];
+const ordinal = (n: number) => `${n}${n === 2 ? "nd" : n === 3 ? "rd" : "th"}`;
 
 interface State {
   name: string;
   contactName: string;
   contactEmail: string;
   timezone: string;
+  reportDay: number;
+  logo: string | null;
   url: string;
   keyPages: string[];
   branded: string;
@@ -23,15 +32,51 @@ interface State {
 /**
  * Four steps, each short enough to finish without scrolling. Validation is
  * inline and only appears once someone has tried to continue, so the form
- * does not shout at people before they have typed anything.
+ * does not shout at people before they have typed anything. The server
+ * validates everything again with the same rules.
  */
-export function Wizard() {
+export function Wizard({ demo, serviceAccount, canEdit }: { demo: boolean; serviceAccount: string; canEdit: boolean }) {
+  const SERVICE_ACCOUNT = serviceAccount;
   const [step, setStep] = useState(0);
   const [tried, setTried] = useState(false);
-  const [s, setS] = useState<State>({ name: "", contactName: "", contactEmail: "", timezone: "Europe/London", url: "", keyPages: ["/"], branded: "", keyword: "" });
-  const [connection, setConnection] = useState<"idle" | "testing" | "ok">("idle");
+  const [s, setS] = useState<State>({ name: "", contactName: "", contactEmail: "", timezone: "Europe/London", reportDay: 3, logo: null, url: "", keyPages: ["/"], branded: "", keyword: "" });
+  const [connection, setConnection] = useState<"idle" | "testing" | "ok" | "failed">("idle");
+  const [connectionMessage, setConnectionMessage] = useState<string | null>(null);
   const [sample, setSample] = useState<"idle" | "working" | "ready">("idle");
+  const [created, setCreated] = useState<{ siteId: string; clientId: string; queued: boolean } | null>(null);
+  const [serverError, setServerError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+  const logoInput = useRef<HTMLInputElement>(null);
+
+  const runTest = async () => {
+    setConnection("testing");
+    setConnectionMessage(null);
+    const r = await testConnection({ url: s.url });
+    if (r.ok) {
+      setConnection("ok");
+      setConnectionMessage(r.message);
+    } else {
+      setConnection("failed");
+      setConnectionMessage(r.error);
+    }
+  };
+
+  const createAndGenerate = async () => {
+    setSample("working");
+    setServerError(null);
+    const r = await createClient({
+      name: s.name, contactName: s.contactName, contactEmail: s.contactEmail, timezone: s.timezone, reportDay: s.reportDay,
+      url: s.url, keyPages: s.keyPages.map((p) => p.trim()).filter(Boolean), branded: s.branded, keyword: s.keyword, logo: s.logo,
+    });
+    if (!r.ok) {
+      setSample("idle");
+      setServerError(r.error);
+      return;
+    }
+    const g = await generateSample({ siteId: r.siteId });
+    setCreated({ siteId: r.siteId, clientId: r.clientId, queued: g.ok ? g.queued : false });
+    setSample("ready");
+  };
   const set = <K extends keyof State>(k: K, v: State[K]) => setS((x) => ({ ...x, [k]: v }));
 
   const errors: Record<string, string> = {};
@@ -81,13 +126,54 @@ export function Wizard() {
               <Input label="Contact name" value={s.contactName} onChange={(v) => set("contactName", v)} placeholder="Dr Ruth Harlow" />
               <Input label="Contact email" type="email" value={s.contactEmail} onChange={(v) => set("contactEmail", v)} error={err("contactEmail")} placeholder="ruth@example.com" />
             </div>
-            <label className="flex flex-col gap-1.5">
-              <span className="text-small font-medium text-ink-2">Time zone</span>
-              <select value={s.timezone} onChange={(e) => set("timezone", e.target.value)} className="h-10 rounded-md bg-raised px-3 text-body text-ink hairline focus:shadow-[inset_0_0_0_1.5px_var(--accent)] focus:outline-none">
-                {["Europe/London", "Europe/Dublin", "Europe/Paris", "America/New_York", "Australia/Sydney"].map((tz) => <option key={tz}>{tz}</option>)}
-              </select>
-              <span className="text-micro text-ink-3">Reports are generated at 06:00 on the 3rd in this time zone.</span>
-            </label>
+            <div className="grid gap-4 sm:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)]">
+              <label className="flex flex-col gap-1.5">
+                <span className="text-small font-medium text-ink-2">Time zone</span>
+                <select value={s.timezone} onChange={(e) => set("timezone", e.target.value)} className="h-10 rounded-md bg-raised px-3 text-body text-ink hairline focus:shadow-[inset_0_0_0_1.5px_var(--accent)] focus:outline-none">
+                  {TIME_ZONES.map((tz) => <option key={tz} value={tz}>{tz.replace("_", " ")}</option>)}
+                </select>
+              </label>
+              <label className="flex flex-col gap-1.5">
+                <span className="text-small font-medium text-ink-2">Report day</span>
+                <select value={s.reportDay} onChange={(e) => set("reportDay", Number(e.target.value))} className="h-10 rounded-md bg-raised px-3 text-body text-ink hairline focus:shadow-[inset_0_0_0_1.5px_var(--accent)] focus:outline-none">
+                  {REPORT_DAYS.map((d) => <option key={d} value={d}>{ordinal(d)} of the month</option>)}
+                </select>
+              </label>
+            </div>
+            <p className="-mt-2 text-micro text-ink-3">
+              Reports are generated at 06:00 on the {ordinal(s.reportDay)} in {s.timezone.split("/").at(-1)!.replace("_", " ")} time. The 2nd is the earliest, because Search Console needs two days to settle.
+            </p>
+            <div className="flex items-center gap-3">
+              {s.logo ? (
+                // eslint-disable-next-line @next/next/no-img-element -- a local data: URL preview
+                <img src={s.logo} alt="Client logo" className="h-12 max-w-28 rounded-md bg-raised object-contain p-1 hairline" />
+              ) : (
+                <span className="flex size-12 items-center justify-center rounded-md bg-sunken text-micro text-ink-3">Logo</span>
+              )}
+              <input
+                ref={logoInput}
+                type="file"
+                accept="image/png,image/jpeg,image/webp,image/svg+xml"
+                className="sr-only"
+                aria-label="Client logo"
+                onChange={async (e) => {
+                  const file = e.target.files?.[0];
+                  e.target.value = "";
+                  if (!file) return;
+                  try {
+                    set("logo", await downscaleLogo(file));
+                    setServerError(null);
+                  } catch (err) {
+                    setServerError((err as Error).message);
+                  }
+                }}
+              />
+              <Button type="button" variant="secondary" size="sm" onClick={() => logoInput.current?.click()}>
+                <UploadSimple size={14} aria-hidden />{s.logo ? "Replace logo" : "Add client logo"}
+              </Button>
+              <span className="text-micro text-ink-3">Optional. Shown on the report cover.</span>
+            </div>
+            {serverError && step === 0 && <p role="alert" className="text-micro text-act">{serverError}</p>}
           </Section>
         )}
 
@@ -135,36 +221,42 @@ export function Wizard() {
               <li className="flex gap-3"><Num n={3} />Come back here and test the connection.</li>
             </ol>
             <div className="flex flex-wrap items-center gap-3">
-              <Button type="button" variant="secondary" disabled={connection === "testing"} onClick={() => { setConnection("testing"); setTimeout(() => setConnection("ok"), 1400); }}>
-                {connection === "testing" ? <CircleNotch size={15} className="animate-spin" aria-hidden /> : connection === "ok" ? <CheckCircle size={15} weight="fill" className="text-good" aria-hidden /> : null}
-                {connection === "testing" ? "Testing…" : connection === "ok" ? "Connected" : "Test connection"}
+              <Button type="button" variant="secondary" disabled={connection === "testing"} onClick={() => void runTest()}>
+                {connection === "testing" ? <CircleNotch size={15} className="animate-spin" aria-hidden /> : connection === "ok" ? <CheckCircle size={15} weight="fill" className="text-good" aria-hidden /> : connection === "failed" ? <WarningCircle size={15} weight="fill" className="text-act" aria-hidden /> : null}
+                {connection === "testing" ? "Testing…" : connection === "ok" ? "Connected" : connection === "failed" ? "Try again" : "Test connection"}
               </Button>
-              <span role="status" className={cn("text-small", connection === "ok" ? "text-good" : err("connection") ? "text-act" : "text-ink-3")}>
-                {connection === "ok" ? "Access confirmed. 16 months of history will be backfilled for year-on-year comparisons." : err("connection") ?? "Takes a few seconds."}
+              <span role="status" className={cn("min-w-0 flex-1 text-small", connection === "ok" ? "text-good" : connection === "failed" || err("connection") ? "text-act" : "text-ink-3")}>
+                {connectionMessage ?? err("connection") ?? "Takes a few seconds."}
               </span>
             </div>
           </Section>
         )}
 
         {step === 3 && (
-          <Section title="Generate a sample report" body="Uptime monitoring has started. Generate a report from the backfilled data to check everything looks right before the 3rd.">
+          <Section title="Generate a sample report" body={`Saving creates the client and starts uptime monitoring and the 16-month Search Console backfill. The first report shows year-on-year figures straight away. Nothing is sent to ${s.contactName || "the client"}.`}>
             <div className="flex items-center gap-4 rounded-lg bg-raised p-5 shadow-raised">
               <span className="flex size-12 items-center justify-center rounded-md bg-accent-soft text-accent"><FilePdf size={24} weight="duotone" aria-hidden /></span>
               <div className="min-w-0 flex-1">
                 <p className="font-medium text-ink">{s.name || "New client"}, sample report</p>
                 <p className="text-small text-ink-3">
-                  {sample === "idle" && "About a minute. Nothing is sent to the client."}
-                  {sample === "working" && "Collecting search data, running speed tests, rendering…"}
-                  {sample === "ready" && "Ready. 8 pages, 1.2 MB."}
+                  {sample === "idle" && "Creates the client, then builds the first report as a draft for you to review."}
+                  {sample === "working" && "Saving the client and building the report…"}
+                  {sample === "ready" && (demo
+                    ? "Ready as a draft. In the demo the history is generated, so you can see the whole report straight away."
+                    : created?.queued
+                      ? "Client saved. The backfill and a dry-run report are running on GitHub Actions; the draft appears in a few minutes."
+                      : "Client saved. Tonight's daily job runs the backfill; the draft appears after the next monthly run, or run it from the Actions tab.")}
                 </p>
                 {sample === "working" && <span className="mt-2 block h-0.5 overflow-hidden rounded-full bg-line"><span className="block h-full w-1/4 animate-indeterminate rounded-full bg-accent" /></span>}
               </div>
-              {sample === "ready" ? (
-                <Link href="/reports/site_harlow" className={buttonClass({ variant: "primary", size: "sm" })}>Open</Link>
+              {sample === "ready" && created ? (
+                <Link href={`/reports/${created.siteId}`} className={buttonClass({ variant: "primary", size: "sm" })}>Open report</Link>
               ) : (
-                <Button type="button" variant="primary" size="sm" disabled={sample === "working"} onClick={() => { setSample("working"); setTimeout(() => setSample("ready"), 2600); }}>Generate</Button>
+                <Button type="button" variant="primary" size="sm" disabled={sample === "working" || !canEdit} onClick={() => void createAndGenerate()}>Create and generate</Button>
               )}
             </div>
+            {serverError && <p role="alert" className="rounded-md bg-act-soft p-3 text-small text-act">{serverError}</p>}
+            {!canEdit && <p className="text-small text-ink-3">Viewers can walk through the steps but cannot save a client.</p>}
           </Section>
         )}
       </div>
@@ -178,7 +270,7 @@ export function Wizard() {
         {step < STEPS.length - 1 ? (
           <Button type="button" variant="primary" onClick={next}>Continue<ArrowRight size={15} aria-hidden /></Button>
         ) : (
-          <Link href="/clients" className={buttonClass({ variant: "primary" })}>Finish</Link>
+          <Link href={created ? `/clients/${created.clientId}` : "/clients"} className={buttonClass({ variant: created ? "primary" : "quiet" })}>{created ? "Finish" : "Skip for now"}</Link>
         )}
       </div>
     </div>
