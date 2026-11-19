@@ -39,8 +39,9 @@ export function CountUp({ to, prefix = "", suffix = "", duration = 1400 }: { to:
   }, [to, duration]);
 
   return (
-    <span ref={ref} aria-label={`${prefix}${to}${suffix}`}>
+    <span ref={ref}>
       <span aria-hidden>{prefix}{value}{suffix}</span>
+      <span className="sr-only">{prefix}{to}{suffix}</span>
     </span>
   );
 }

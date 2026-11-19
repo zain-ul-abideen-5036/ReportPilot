@@ -115,11 +115,11 @@ export function Trust() {
       <dl className="grid">
         {TRUST.map(([t, b], i) => (
           <div key={t} className="reveal grid grid-cols-[44px_1fr] gap-x-3 border-t border-line py-7 first:border-t-0 first:pt-0">
-            <span className="font-display text-title text-ink-4 italic">{String(i + 1).padStart(2, "0")}</span>
-            <div>
-              <dt className="text-lead font-semibold text-ink">{t}</dt>
-              <dd className="mt-1.5 max-w-[52ch] text-body text-ink-3">{b}</dd>
-            </div>
+            <dt className="contents">
+              <span aria-hidden className="row-span-2 font-display text-title text-ink-4 italic">{String(i + 1).padStart(2, "0")}</span>
+              <span className="text-lead font-semibold text-ink">{t}</span>
+            </dt>
+            <dd className="col-start-2 mt-1.5 max-w-[52ch] text-body text-ink-3">{b}</dd>
           </div>
         ))}
       </dl>
@@ -165,7 +165,7 @@ export function FinalCta() {
         Spend the first week of the month on <em className="text-[#f0d3a4]">the work</em>, not the report.
       </h2>
       <div className="mt-10 flex flex-wrap gap-3">
-        <Link href="/dashboard" className="press group inline-flex h-12 items-center gap-2 rounded-full bg-paper px-6 text-body font-semibold text-ink shadow-[0_10px_30px_-12px_rgb(0_0_0/0.5)] hover:bg-raised">
+        <Link href="/demo" prefetch={false} className="press group inline-flex h-12 items-center gap-2 rounded-full bg-paper px-6 text-body font-semibold text-ink shadow-[0_10px_30px_-12px_rgb(0_0_0/0.5)] hover:bg-raised">
           Open the demo dashboard<ArrowRight size={16} className="transition-transform duration-(--duration-fast) group-hover:translate-x-0.5" aria-hidden />
         </Link>
         <Link href="/clients/new" className="press inline-flex h-12 items-center gap-2 rounded-full px-6 text-body font-medium text-accent-ink/85 shadow-[inset_0_0_0_1px_rgb(255_255_255/0.28)] hover:text-accent-ink">
