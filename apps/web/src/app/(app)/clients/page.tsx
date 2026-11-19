@@ -7,12 +7,14 @@ import { PageHeader } from "@/components/ui/PageHeader";
 import { ButtonLink } from "@/components/ui/Button";
 import { Monogram } from "@/components/ui/Monogram";
 import { Delta } from "@/components/ui/Delta";
-import { listSites, period } from "@/lib/data";
+import { getWorkspace } from "@/lib/data";
 
 export const metadata: Metadata = { title: "Clients" };
 
-export default function ClientsPage() {
-  const rows = listSites();
+export default async function ClientsPage() {
+  const ws = await getWorkspace();
+  const { period } = ws;
+  const rows = ws.sites;
   const totalClicks = rows.reduce((n, r) => n + (r.report.search?.kpis[0]?.value ?? 0), 0);
   return (
     <>

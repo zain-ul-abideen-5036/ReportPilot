@@ -1,13 +1,11 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { notFound } from "next/navigation";
-import { ArrowRight, EnvelopeSimple, Globe, Clock, Lightning, Sparkle, FileText } from "@phosphor-icons/react/dist/ssr";
+import { ArrowRight, EnvelopeSimple, Globe, Clock, FileText } from "@phosphor-icons/react/dist/ssr";
 import { TrendChart, UptimeStrip, VitalTrend } from "@reportpilot/charts";
 import {
   THRESHOLDS, addMonths, formatCls, formatCompact, formatMs, formatPct, formatPeriod, formatPeriodShort, formatPosition,
   formatSeconds, prettyUrl, trailingPeriods, type VitalName,
 } from "@reportpilot/core";
-import { CLIENTS } from "@reportpilot/demo";
 import { Topbar } from "@/components/shell/Topbar";
 import { PageHeader, SectionHeading } from "@/components/ui/PageHeader";
 import { ButtonLink } from "@/components/ui/Button";
@@ -15,16 +13,16 @@ import { Monogram } from "@/components/ui/Monogram";
 import { Delta } from "@/components/ui/Delta";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 import { StatusLight } from "@/components/ui/StatusLight";
-import { getClient, period } from "@/lib/data";
-
-export function generateStaticParams() {
-  return CLIENTS.map((c) => ({ clientId: c.id }));
-}
+import { findClient, getWorkspace } from "@/lib/data";
+import { ClientToggles } from "@/components/clients/ClientToggles";
 
 export async function generateMetadata({ params }: { params: Promise<{ clientId: string }> }): Promise<Metadata> {
-  const data = getClient((await params).clientId);
-  return { title: data?.client.name ?? "Client" };
+  const ws = await getWorkspace();
+  const { clientId } = await params;
+  return { title: ws.sites.find((r) => r.client.id === clientId)?.client.name ?? "Client" };
 }
+
+const ordinal = (n: number) => `${n}${n % 10 === 1 && n !== 11 ? "st" : n % 10 === 2 && n !== 12 ? "nd" : n % 10 === 3 && n !== 13 ? "rd" : "th"}`;
 
 const VITALS: Array<{ key: VitalName; label: string; fmt: (v: number | null) => string }> = [
   { key: "lcp", label: "Loading (LCP)", fmt: formatSeconds },
@@ -33,9 +31,9 @@ const VITALS: Array<{ key: VitalName; label: string; fmt: (v: number | null) => 
 ];
 
 export default async function ClientPage({ params }: { params: Promise<{ clientId: string }> }) {
-  const data = getClient((await params).clientId);
-  if (!data) notFound();
-  const { client, sites } = data;
+  const ws = await getWorkspace();
+  const { period } = ws;
+  const { client, sites } = findClient(ws, (await params).clientId);
   const row = sites[0]!;
   const { report } = row;
   const s = report.search;
@@ -135,6 +133,7 @@ export default async function ClientPage({ params }: { params: Promise<{ clientI
               <h2 className="mb-3 text-small font-semibold text-ink">Contact</h2>
               <p className="text-body text-ink">{client.contact.name}</p>
               <p className="flex items-center gap-1.5 text-small text-ink-3"><EnvelopeSimple size={13} aria-hidden />{client.contact.email}</p>
+              {client.contact.bounced && <p className="mt-1 text-micro text-act">Last report email bounced. This address is skipped until it is fixed.</p>}
             </div>
             <div>
               <h2 className="mb-3 text-small font-semibold text-ink">Site</h2>
@@ -148,10 +147,9 @@ export default async function ClientPage({ params }: { params: Promise<{ clientI
             <div>
               <h2 className="mb-3 text-small font-semibold text-ink">Delivery</h2>
               <ul className="flex flex-col gap-2 text-small text-ink-2">
-                <li className="flex items-center gap-2"><Clock size={14} className="text-ink-3" aria-hidden />Report on the {client.reportDay}rd, 06:00 {client.timezone.split("/")[1]} time</li>
-                <li className="flex items-center gap-2"><Lightning size={14} className="text-ink-3" aria-hidden />Auto-send {client.autoSend ? "on" : "off"}</li>
-                <li className="flex items-center gap-2"><Sparkle size={14} className="text-ink-3" aria-hidden />AI wording {client.aiEnabled ? "on, with number check" : "off"}</li>
+                <li className="flex items-center gap-2"><Clock size={14} className="text-ink-3" aria-hidden />Report on the {ordinal(client.reportDay)}, 06:00 {client.timezone.split("/").at(-1)!.replace("_", " ")} time</li>
               </ul>
+              <div className="mt-4"><ClientToggles clientId={client.id} autoSend={client.autoSend} aiEnabled={client.aiEnabled} canEdit={ws.user.role !== "viewer"} /></div>
             </div>
             <div>
               <h2 className="mb-3 text-small font-semibold text-ink">Account manager</h2>
