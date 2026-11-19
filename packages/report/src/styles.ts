@@ -170,6 +170,12 @@ export const REPORT_CSS = /* css */ `
 .rp-defs dt { font-weight: 600; color: var(--rp-ink); }
 .rp-defs dd { margin: 0; }
 
+/* On screen, pages far from the viewport are not laid out or painted
+   until they scroll near, which keeps an eight-page preview cheap. */
+@media screen {
+  .rp-page { content-visibility: auto; contain-intrinsic-size: 794px 1123px; }
+}
+
 @media print {
   @page { size: A4; margin: 0; }
   html, body { margin: 0; background: #fff; }
