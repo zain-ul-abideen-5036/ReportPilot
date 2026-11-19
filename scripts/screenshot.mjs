@@ -10,6 +10,15 @@ import { mkdir, readdir, readFile, writeFile } from "node:fs/promises";
 import { createRequire } from "node:module";
 
 const base = process.argv[2] ?? "http://localhost:3100";
+
+/** Dashboard pages need a session; the demo signs in with one request. */
+async function signedIn(options) {
+  const context = await browser.newContext(options);
+  const page = await context.newPage();
+  await page.goto(base + "/demo");
+  await page.close();
+  return context;
+}
 const out = "docs/screenshots";
 
 // The README banner: a 16:9 frame laid out at 1228 px, the width a 1920 px
@@ -37,7 +46,7 @@ await mkdir(out, { recursive: true });
 const browser = await chromium.launch();
 
 {
-  const c = await browser.newContext({ viewport: { width: hero.width, height: hero.height }, deviceScaleFactor: hero.scale, reducedMotion: "reduce" });
+  const c = await signedIn({ viewport: { width: hero.width, height: hero.height }, deviceScaleFactor: hero.scale, reducedMotion: "reduce" });
   const page = await c.newPage();
   await page.goto(base + hero.path, { waitUntil: "networkidle" });
   await page.evaluate(() => document.fonts.ready);
@@ -47,7 +56,7 @@ const browser = await chromium.launch();
   await c.close();
 }
 
-const ctx = await browser.newContext({ viewport: { width: 1440, height: 1000 }, deviceScaleFactor: 1.5, reducedMotion: "reduce" });
+const ctx = await signedIn({ viewport: { width: 1440, height: 1000 }, deviceScaleFactor: 1.5, reducedMotion: "reduce" });
 for (const shot of desktop) {
   const page = await ctx.newPage();
   await page.setViewportSize({ width: 1440, height: shot.height });
@@ -64,7 +73,7 @@ for (const shot of desktop) {
   await page.close();
 }
 
-const phone = await browser.newContext({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 2, reducedMotion: "reduce", isMobile: true, hasTouch: true });
+const phone = await signedIn({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 2, reducedMotion: "reduce", isMobile: true, hasTouch: true });
 for (const shot of mobile) {
   const page = await phone.newPage();
   await page.goto(base + shot.path, { waitUntil: "networkidle" });
@@ -80,7 +89,7 @@ for (const [name, path, width, height] of [
   ["tablet-landing", "/", 768, 1024],
   ["tablet-overview", "/dashboard", 768, 1024],
 ]) {
-  const c = await browser.newContext({ viewport: { width, height }, deviceScaleFactor: 1.5, reducedMotion: "reduce" });
+  const c = await signedIn({ viewport: { width, height }, deviceScaleFactor: 1.5, reducedMotion: "reduce" });
   const page = await c.newPage();
   await page.goto(base + path, { waitUntil: "networkidle" });
   await page.waitForTimeout(400);
@@ -91,7 +100,7 @@ for (const [name, path, width, height] of [
 
 // Landing sections as standalone pictures for the README.
 {
-  const c = await browser.newContext({ viewport: { width: 1440, height: 1000 }, deviceScaleFactor: 1.5, reducedMotion: "reduce" });
+  const c = await signedIn({ viewport: { width: 1440, height: 1000 }, deviceScaleFactor: 1.5, reducedMotion: "reduce" });
   const page = await c.newPage();
   await page.goto(base + "/", { waitUntil: "networkidle" });
   for (const [name, selector] of [["section-how-it-works", "#how"], ["section-the-report", "#report"]]) {
@@ -113,7 +122,7 @@ for (const [name, path, width, height] of [
 }
 
 // The client PDF: four representative pages, side by side.
-const pdf = await browser.newContext({ viewport: { width: 794, height: 1123 }, deviceScaleFactor: 1 });
+const pdf = await signedIn({ viewport: { width: 794, height: 1123 }, deviceScaleFactor: 1 });
 const page = await pdf.newPage();
 await page.goto(`${base}/print/site_pennine`, { waitUntil: "networkidle" });
 await page.evaluate(() => document.fonts.ready);
@@ -126,7 +135,7 @@ for (const [n, i] of pick.entries()) {
   buffers.push(png.toString("base64"));
   console.log(`saved ${names[n]}`);
 }
-const sheet = await (await browser.newContext({ viewport: { width: 1800, height: 700 }, deviceScaleFactor: 1.5 })).newPage();
+const sheet = await (await signedIn({ viewport: { width: 1800, height: 700 }, deviceScaleFactor: 1.5 })).newPage();
 await sheet.setContent(`<body style="margin:0;padding:48px;background:#efe9de;display:flex;gap:28px;justify-content:center">${buffers
   .map((b) => `<img src="data:image/png;base64,${b}" style="width:390px;border-radius:3px;box-shadow:0 0 0 1px rgb(52 40 22/.08),0 24px 48px -24px rgb(52 40 22/.35)">`)
   .join("")}</body>`);
