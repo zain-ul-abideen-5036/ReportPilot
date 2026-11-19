@@ -49,3 +49,4 @@ apps/web/next-env.d.ts
 
 # Vercel CLI project link
 .vercel/
+e2e/.auth/
