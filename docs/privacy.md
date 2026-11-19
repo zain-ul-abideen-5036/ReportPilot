@@ -15,6 +15,10 @@ the basis for an agency's own privacy notice to its clients.
 | Client contact names and email addresses | **Yes** | Delivering reports | Until the client or contact is removed |
 | Agency user names and email addresses | **Yes** | Signing in, audit log | Until the user is removed |
 | Audit log entries | Indirectly (user ids) | Accountability for approvals and sends | Kept with the organisation |
+| Sign-in link tokens | No (a SHA-256 hash and the email it was for) | One-time sign-in | Expire after 15 minutes; used tokens cannot be replayed |
+| Session cookie | Name, email and role, signed | Staying signed in | 14 days, in the user's browser only |
+| Demo changes cookie (demo only) | No | Remembering a visitor's demo edits | 30 days, in the visitor's browser only |
+| Email delivery status | No (Resend's message id) | Showing delivered or bounced | Kept with the report |
 
 Search Console query data is aggregated by Google and anonymises rare
 queries; ReportPilot never receives information about individual searchers.
@@ -47,5 +51,6 @@ queries; ReportPilot never receives information about individual searchers.
   client deletes all of that client's data through cascading foreign keys.
 - **Access:** an agency owner can export a client's stored data from the
   database on request.
-- **Bounces:** an email that bounces marks the contact so reports stop going
-  to it; the address is not retained elsewhere.
+- **Bounces:** Resend's signed webhook marks a bounced or complaining contact
+  so reports stop going to it, and raises an alert for the manager; the
+  address is not retained elsewhere.
