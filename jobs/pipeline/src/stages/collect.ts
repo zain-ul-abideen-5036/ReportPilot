@@ -17,6 +17,17 @@ export interface Collectors {
   uptime?: (siteId: string, period: string) => Promise<CollectedData["uptime"]>;
   indexing?: (siteId: string) => Promise<CollectedData["indexing"]>;
   speedSnapshot?: (siteId: string, period: string) => Promise<CollectedData["speed"]>;
+  /**
+   * Monthly Search Console aggregates we already hold (gsc_monthly_* and
+   * gsc_daily, filled by the 16-month backfill). Earlier months are read
+   * from here instead of the API, and each newly fetched month is saved.
+   */
+  archive?: SearchArchive;
+}
+
+export interface SearchArchive {
+  load(siteId: string, period: string): Promise<MonthSearch | null>;
+  save(siteId: string, month: MonthSearch): Promise<void>;
 }
 
 export interface CollectResult {
@@ -48,18 +59,25 @@ export async function collect(site: PipelineSite, period: string, c: Collectors,
       notFinal = true;
       throw new Error(`Search Console has not finalised ${period} yet`);
     }
-    const [current, previous, yearAgo] = await Promise.all([
-      gsc.month(property, period),
-      gsc.month(property, addMonths(period, -1)).catch(() => null),
-      gsc.month(property, addMonths(period, -12)).catch(() => null),
-    ]);
-    // 13-month sparkline: reuse the months we have, fetch totals for the rest.
+    // Earlier months come from the archive when the backfill has them; only
+    // missing months cost API calls. Each month fetched is archived for next time.
+    const archived = async (p: string): Promise<MonthSearch | null> => {
+      const stored = await c.archive?.load(site.id, p).catch(() => null);
+      if (stored) return stored;
+      const fetched = await gsc.month(property, p).catch(() => null);
+      if (fetched) await c.archive?.save(site.id, fetched).catch((err: Error) => log.warn("archive save failed", { period: p, error: err.message }));
+      return fetched;
+    };
+    const current = await gsc.month(property, period);
+    await c.archive?.save(site.id, current).catch((err: Error) => log.warn("archive save failed", { period, error: err.message }));
+    const [previous, yearAgo] = await Promise.all([archived(addMonths(period, -1)), archived(addMonths(period, -12))]);
+    // 13-month sparkline: reuse the months we have, read or fetch the rest.
     const have = new Map<string, MonthSearch>([[period, current]]);
     if (previous) have.set(previous.period, previous);
     if (yearAgo) have.set(yearAgo.period, yearAgo);
     const trailing = [];
     for (const p of trailingPeriods(period, 13)) {
-      const m = have.get(p) ?? (await gsc.month(property, p).catch(() => null));
+      const m = have.get(p) ?? (await archived(p));
       if (m) trailing.push({ period: p, ...m.totals });
     }
     return { current, previous, yearAgo, trailing };
