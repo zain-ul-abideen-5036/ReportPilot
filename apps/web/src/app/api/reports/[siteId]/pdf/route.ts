@@ -1,56 +1,20 @@
-import { NextResponse } from "next/server";
-import { formatPeriod } from "@reportpilot/core";
-import { getSite } from "@/lib/data";
+import { getWorkspace } from "@/lib/data";
+import { demoCookie, pdfResponse, pdfUnavailable, sitePdf } from "@/lib/pdf";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 // Starting Chromium in a cold serverless function takes a few seconds.
 export const maxDuration = 60;
 
-/**
- * Download the report as a PDF. In production the PDF is rendered once by
- * the pipeline and streamed from R2; in demo mode it is rendered on demand
- * by printing /print/[siteId] with the local Playwright Chromium.
- */
-/*
- * Demo reports never change while the server runs, so each PDF is printed
- * once and served from memory after that. Concurrent requests for the same
- * report share one render.
- */
-const rendered = new Map<string, Promise<Uint8Array>>();
-
+/** The PDF for a signed-in member of the agency. Clients use /r/[token]/pdf. */
 export async function GET(req: Request, { params }: { params: Promise<{ siteId: string }> }) {
-  const row = getSite((await params).siteId);
-  if (!row) return NextResponse.json({ error: "Report not found" }, { status: 404 });
+  const ws = await getWorkspace();
+  const { siteId } = await params;
+  const row = ws.sites.find((r) => r.site.id === siteId);
+  if (!row) return Response.json({ error: "Report not found" }, { status: 404 });
   try {
-    let job = rendered.get(row.site.id);
-    if (!job) {
-      const { printUrlToPdf } = await import("@reportpilot/report/pdf");
-      const origin = new URL(req.url).origin;
-      // On protected Vercel preview deployments the print page would answer
-      // with a login screen; Vercel's automation bypass secret lets it through.
-      const bypass = process.env.VERCEL_AUTOMATION_BYPASS_SECRET;
-      job = printUrlToPdf(`${origin}/print/${row.site.id}`, {
-        cookie: req.headers.get("cookie") ?? undefined,
-        headers: bypass ? { "x-vercel-protection-bypass": bypass } : {},
-      });
-      rendered.set(row.site.id, job);
-      job.catch(() => rendered.delete(row.site.id));
-    }
-    const pdf = await job;
-    const filename = `${row.client.name} - ${formatPeriod(row.report.period)}.pdf`.replace(/[^\w .&-]/g, "");
-    return new NextResponse(Buffer.from(pdf), {
-      headers: {
-        "content-type": "application/pdf",
-        "content-disposition": `inline; filename="${filename}"`,
-        "cache-control": "private, max-age=300",
-        "x-robots-tag": "noindex",
-      },
-    });
+    return pdfResponse(await sitePdf(row, new URL(req.url).origin, demoCookie(req.headers.get("cookie"))), row);
   } catch (err) {
-    return NextResponse.json(
-      { error: "PDF rendering is unavailable here. Run `npx playwright install chromium` and try again.", detail: (err as Error).message },
-      { status: 503 },
-    );
+    return pdfUnavailable(err);
   }
 }
