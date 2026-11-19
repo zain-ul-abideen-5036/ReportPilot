@@ -121,7 +121,7 @@ export function Wizard({ demo, serviceAccount, canEdit }: { demo: boolean; servi
       <div key={step} className="animate-enter">
         {step === 0 && (
           <Section title="Who is the client?" body="Reports go to this contact. You can add more contacts later.">
-            <Input label="Business name" value={s.name} onChange={(v) => set("name", v)} error={err("name")} placeholder="Harlow & Finch Dental" autoFocus />
+            <Input label="Business name" value={s.name} onChange={(v) => set("name", v)} error={err("name")} placeholder="Harlow & Finch Dental" />
             <div className="grid gap-4 sm:grid-cols-2">
               <Input label="Contact name" value={s.contactName} onChange={(v) => set("contactName", v)} placeholder="Dr Ruth Harlow" />
               <Input label="Contact email" type="email" value={s.contactEmail} onChange={(v) => set("contactEmail", v)} error={err("contactEmail")} placeholder="ruth@example.com" />
@@ -179,7 +179,7 @@ export function Wizard({ demo, serviceAccount, canEdit }: { demo: boolean; servi
 
         {step === 1 && (
           <Section title="Which site are we reporting on?" body="Up to five key pages get weekly speed tests and index checks.">
-            <Input label="Website address" value={s.url} onChange={(v) => set("url", v)} error={err("url")} placeholder="https://www.example.com" autoFocus />
+            <Input label="Website address" value={s.url} onChange={(v) => set("url", v)} error={err("url")} placeholder="https://www.example.com" />
             <div>
               <span className="text-small font-medium text-ink-2">Key pages</span>
               <ul className="mt-1.5 flex flex-col gap-2">
@@ -293,8 +293,8 @@ function Num({ n }: { n: number }) {
   return <span className="flex size-6 shrink-0 items-center justify-center rounded-full bg-accent-soft text-micro font-semibold text-accent">{n}</span>;
 }
 
-function Input({ label, value, onChange, error, hint, placeholder, type = "text", autoFocus, mono }: {
-  label: string; value: string; onChange: (v: string) => void; error?: string; hint?: string; placeholder?: string; type?: string; autoFocus?: boolean; mono?: boolean;
+function Input({ label, value, onChange, error, hint, placeholder, type = "text", mono }: {
+  label: string; value: string; onChange: (v: string) => void; error?: string; hint?: string; placeholder?: string; type?: string; mono?: boolean;
 }) {
   const id = label.toLowerCase().replace(/\W+/g, "-");
   return (
@@ -304,7 +304,6 @@ function Input({ label, value, onChange, error, hint, placeholder, type = "text"
         id={id}
         type={type}
         value={value}
-        autoFocus={autoFocus}
         placeholder={placeholder}
         onChange={(e) => onChange(e.target.value)}
         aria-invalid={error ? true : undefined}

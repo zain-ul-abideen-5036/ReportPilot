@@ -12,7 +12,7 @@ import { USERS } from "@reportpilot/demo";
 import { requireSession } from "./auth/server";
 import { SESSION_COOKIE, cookieOptions, isDemoMode, sessionSecret, signSession, type Session } from "./auth/session";
 import { pushAudit, readDemoState, resetDemoState, writeDemoState } from "./demo-state";
-import { database, demoShareToken, getWorkspace, initialsOf } from "./data";
+import { database, demoShareToken, getWorkspace } from "./data";
 
 /**
  * Every change the dashboard can make. Each action validates its input

@@ -27,7 +27,7 @@ const handler = {
       try {
         if (event.cron === "10 0 * * *") {
           const r = await runNightly(store, new Date(event.scheduledTime));
-          console.log(JSON.stringify({ msg: "nightly rollup", ...r }));
+          console.info(JSON.stringify({ msg: "nightly rollup", ...r }));
         } else {
           const outcomes = await runTick({
             store,
@@ -35,7 +35,7 @@ const handler = {
             recheckDelayMs: Number(env.RECHECK_DELAY_MS ?? 30_000),
           });
           const down = outcomes.filter((o) => !o.result.ok).length;
-          console.log(JSON.stringify({ msg: "uptime tick", sites: outcomes.length, down, transitions: outcomes.filter((o) => o.transition) }));
+          console.info(JSON.stringify({ msg: "uptime tick", sites: outcomes.length, down, transitions: outcomes.filter((o) => o.transition) }));
         }
       } finally {
         await sql.end({ timeout: 5 });

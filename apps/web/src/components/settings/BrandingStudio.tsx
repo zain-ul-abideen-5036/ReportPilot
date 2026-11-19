@@ -168,6 +168,8 @@ export function BrandingStudio({ initial, sample, canManage, demo }: Props) {
           <span className="font-semibold text-ink">Live preview</span>
           <span className="text-ink-3">{sample.client}, cover and summary</span>
         </p>
+        {/* A scrollable region must be reachable by keyboard (WCAG 2.1.1), so it takes focus itself. */}
+        {/* eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex */}
         <div tabIndex={0} role="region" aria-label="Report preview" className="rounded-lg bg-sunken p-4 focus-visible:outline-2 focus-visible:outline-accent sm:p-6 lg:min-h-0 lg:flex-1 lg:overflow-y-auto lg:overscroll-contain [scrollbar-width:thin]">
           <ScaledDocument pages={2} gap={20}>
             <div className="[&_.rp-page]:rounded-[3px] [&_.rp-page]:shadow-sheet">

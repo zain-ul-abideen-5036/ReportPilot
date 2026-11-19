@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { ArrowRight, Plus } from "@phosphor-icons/react/dist/ssr";
 import { formatPeriod } from "@reportpilot/core";
 import { Topbar } from "@/components/shell/Topbar";
@@ -78,7 +79,7 @@ export default async function OverviewPage() {
             id="portfolio-heading"
             title="All sites"
             meta={`${rows.length} sites · ${formatPeriod(period)}`}
-            action={<a href="/clients" className="text-small font-medium text-ink-3 hover:text-accent">Manage clients</a>}
+            action={<Link href="/clients" className="text-small font-medium text-ink-3 hover:text-accent">Manage clients</Link>}
           />
           <PortfolioTable rows={rows} />
         </section>

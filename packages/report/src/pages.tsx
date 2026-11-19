@@ -3,7 +3,7 @@ import {
   THRESHOLDS, formatCls, formatCompact, formatDayShort, formatDuration, formatInt, formatMs, formatPct,
   formatPosition, formatSeconds, prettyUrl, urlPath, type Kpi, type VitalName,
 } from "@reportpilot/core";
-import { ChangeText, Kicker, LightTile, Page, ShareBar, Unavailable } from "./parts";
+import { ChangeText, Kicker, LightTile, Page, Unavailable } from "./parts";
 import type { ReportContext } from "./types";
 
 const DEVICE: Record<string, string> = { MOBILE: "Mobile", DESKTOP: "Desktop", TABLET: "Tablet" };
