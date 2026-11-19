@@ -5,7 +5,7 @@ import {
   buildReport, reportingPeriodFor, templateNarrative, type Narrative, type ReportData, type ReportStatus,
 } from "@reportpilot/core";
 import {
-  ALERTS, AUDIT, CLIENTS, DELIVERY_HISTORY, DEMO_NOW, DEMO_PERIOD, JOB_RUNS, ORG, SITES, USERS, collectDemo, collectOnboarded, onboardedSite,
+  ALERTS, AUDIT, CLIENTS, DELIVERY_HISTORY, DEMO_NOW, DEMO_PERIOD, JOB_RUNS, ORG, SITES, USERS, collectDemo, collectOnboarded, onboardedSite, shareTokenFor,
   type AlertKind, type AlertState, type Stage,
 } from "@reportpilot/demo";
 import { requireSession } from "./auth/server";
@@ -158,16 +158,7 @@ function demoReport(siteId: string, build: () => ReportData) {
 }
 
 /** Demo share tokens are derived, so links stay stable between visits; production uses crypto.randomBytes(16). */
-export function demoShareToken(siteId: string, salt = ""): string {
-  let h1 = 0x811c9dc5;
-  let h2 = 0x01000193;
-  for (const ch of `${siteId}:${DEMO_PERIOD}:${salt}`) {
-    h1 = Math.imul(h1 ^ ch.charCodeAt(0), 16777619) >>> 0;
-    h2 = Math.imul(h2 ^ ch.charCodeAt(0), 2246822519) >>> 0;
-  }
-  const hex = (n: number) => n.toString(16).padStart(8, "0");
-  return `${hex(h1)}${hex(h2)}${hex(h1 ^ 0x5bd1e995)}${hex((h2 + 0x9e3779b9) >>> 0)}`;
-}
+export const demoShareToken = (siteId: string, salt = "") => shareTokenFor(siteId, DEMO_PERIOD, salt);
 
 function demoWorkspace(session: Session, state: DemoState): Workspace {
   const user = USERS.find((u) => u.id === session.uid) ?? USERS[1]!;
