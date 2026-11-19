@@ -39,7 +39,7 @@ export default function OverviewPage() {
       <Topbar crumbs={[{ label: "Overview" }]} period={period} />
       <div className="pt-8 md:pt-10">
         <PageHeader
-          className="glow"
+          className="glow glow-soft"
           eyebrow={date}
           title={<>{greeting(now)}, {currentUser.name.split(" ")[0]}.</>}
           description={

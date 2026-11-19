@@ -254,7 +254,6 @@
   }
   .rule-gradient { background-image: var(--grad-rule); }
   .display-soft { font-variation-settings: "SOFT" 100, "WONK" 0; }
-  .display-wonk { font-variation-settings: "SOFT" 100, "WONK" 1; }
 }
 
 /* A slow, drifting glow behind hero areas. Transform-only, off under reduced motion. */
@@ -265,8 +264,9 @@
   inset: -40% -12% auto;
   height: 180%;
   background: var(--grad-glow);
-  filter: blur(8px);
   z-index: -1;
+  will-change: transform;
+  backface-visibility: hidden;
   pointer-events: none;
   animation: drift 22s ease-in-out infinite alternate;
 }
@@ -293,3 +293,59 @@
 }
 
 @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+
+/* Hero stack sizing --------------------------------------------------------
+   Drawn at 600 × 640 and scaled by --k = min(width factor, height factor).
+   Width factors follow the column the stack sits in; height factors only
+   apply in the two-column layout, so the whole hero fits above the fold on
+   short laptop screens. Width and height are set from --k too, so the
+   layout box shrinks with the drawing and nothing overflows. */
+.hero-stack {
+  --bw: 600px;
+  --bh: 640px;
+  --zw: 0.58;
+  --zh: 1;
+  --k: min(var(--zw), var(--zh));
+  position: relative;
+  width: calc(var(--bw) * var(--k));
+  height: calc(var(--bh) * var(--k));
+}
+.hero-stack-inner {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: var(--bw);
+  height: var(--bh);
+  transform: scale(var(--k));
+  transform-origin: top left;
+}
+@media (min-width: 400px) { .hero-stack { --zw: 0.64; } }
+@media (min-width: 480px) { .hero-stack { --zw: 0.74; } }
+@media (min-width: 640px) { .hero-stack { --zw: 0.92; } }
+@media (min-width: 768px) { .hero-stack { --zw: 1; } }
+@media (min-width: 1024px) { .hero-stack { --zw: 0.74; } }
+@media (min-width: 1152px) { .hero-stack { --zw: 0.84; } }
+@media (min-width: 1280px) { .hero-stack { --zw: 0.92; } }
+@media (min-width: 1440px) { .hero-stack { --zw: 1; } }
+@media (min-width: 1024px) and (max-height: 940px) { .hero-stack { --zh: 0.92; } }
+@media (min-width: 1024px) and (max-height: 860px) { .hero-stack { --zh: 0.84; } }
+@media (min-width: 1024px) and (max-height: 800px) { .hero-stack { --zh: 0.76; } }
+@media (min-width: 1024px) and (max-height: 740px) { .hero-stack { --zh: 0.7; } }
+@media (min-width: 1024px) and (max-height: 680px) { .hero-stack { --zh: 0.62; } }
+@media (min-width: 1024px) and (max-height: 620px) { .hero-stack { --zh: 0.55; } }
+
+/* In-app variant: stays inside its block and feathers out on every side,
+   so it reads as light falling on the page rather than a tinted box. */
+.glow-soft::before {
+  inset: -24% 0;
+  height: auto;
+  -webkit-mask-image:
+    linear-gradient(to right, transparent, #000 18%, #000 82%, transparent),
+    linear-gradient(to bottom, transparent, #000 30%, #000 70%, transparent);
+  -webkit-mask-composite: source-in;
+  mask-image:
+    linear-gradient(to right, transparent, #000 18%, #000 82%, transparent),
+    linear-gradient(to bottom, transparent, #000 30%, #000 70%, transparent);
+  mask-composite: intersect;
+  opacity: 0.85;
+}
