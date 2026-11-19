@@ -161,9 +161,9 @@ export function FinalCta() {
         <Link href="/dashboard" className="press group inline-flex h-12 items-center gap-2 rounded-full bg-paper px-6 text-body font-semibold text-ink shadow-[0_10px_30px_-12px_rgb(0_0_0/0.5)] hover:bg-raised">
           Open the demo dashboard<ArrowRight size={16} className="transition-transform duration-(--duration-fast) group-hover:translate-x-0.5" aria-hidden />
         </Link>
-        <a href="https://github.com/zain-ul-abideen-5036/ReportPilot" className="press inline-flex h-12 items-center gap-2 rounded-full px-6 text-body font-medium text-accent-ink/85 shadow-[inset_0_0_0_1px_rgb(255_255_255/0.28)] hover:text-accent-ink">
-          Source on GitHub<ArrowUpRight size={15} aria-hidden />
-        </a>
+        <Link href="/clients/new" className="press inline-flex h-12 items-center gap-2 rounded-full px-6 text-body font-medium text-accent-ink/85 shadow-[inset_0_0_0_1px_rgb(255_255_255/0.28)] hover:text-accent-ink">
+          See how onboarding works<ArrowUpRight size={15} aria-hidden />
+        </Link>
       </div>
     </section>
   );
