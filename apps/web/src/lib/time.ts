@@ -1,7 +1,10 @@
-import { now } from "./data";
+import { DEMO_NOW } from "@reportpilot/demo";
 
-/** "4 min ago", "3 h ago", "2 days ago", then a date. Relative to the demo clock. */
-export function timeAgo(iso: string, from: Date = now): string {
+/** The demo's sample data is frozen at DEMO_NOW; a real deployment uses the real clock. */
+const clock = () => (process.env.DATABASE_URL ? new Date() : DEMO_NOW);
+
+/** "4 min ago", "3 h ago", "2 days ago", then a date. */
+export function timeAgo(iso: string, from: Date = clock()): string {
   const minutes = Math.round((from.getTime() - Date.parse(iso)) / 60_000);
   if (minutes < 1) return "just now";
   if (minutes < 60) return `${minutes} min ago`;
