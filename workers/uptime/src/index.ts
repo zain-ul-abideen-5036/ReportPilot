@@ -1,4 +1,5 @@
 import postgres from "postgres";
+import * as Sentry from "@sentry/cloudflare";
 import { postgresStore } from "./store";
 import { resendNotifier } from "./notify";
 import { runNightly, runTick } from "./monitor";
@@ -9,6 +10,8 @@ export interface Env {
   ALERT_FROM: string;
   ALERT_TO?: string;
   RECHECK_DELAY_MS?: string;
+  /** Optional. When set, any exception in a cron run is reported to Sentry. */
+  SENTRY_DSN?: string;
 }
 
 /**
@@ -16,7 +19,7 @@ export interface Env {
  * up yesterday and applies retention. Each invocation opens and closes
  * its own small connection, which suits Workers' short lifetimes.
  */
-export default {
+const handler = {
   async scheduled(event: ScheduledController, env: Env, ctx: ExecutionContext) {
     const sql = postgres(env.DATABASE_URL, { max: 2, prepare: false, fetch_types: false });
     const store = postgresStore(sql);
@@ -47,6 +50,12 @@ export default {
     return Response.json({ ok: true, service: "reportpilot-uptime" });
   },
 };
+
+// Sentry stays inert without a DSN, so local `wrangler dev` needs no account.
+export default Sentry.withSentry(
+  (env: Env) => ({ dsn: env.SENTRY_DSN, enabled: Boolean(env.SENTRY_DSN), tracesSampleRate: 0 }),
+  handler as unknown as Parameters<typeof Sentry.withSentry<Env>>[1],
+);
 
 interface ScheduledController { cron: string; scheduledTime: number }
 interface ExecutionContext { waitUntil(promise: Promise<unknown>): void }

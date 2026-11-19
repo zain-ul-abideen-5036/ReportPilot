@@ -16,6 +16,7 @@ RECHECK_DELAY_MS = "30000"
 #   DATABASE_URL   Postgres connection string (use the pooled URL)
 #   RESEND_API_KEY Email for downtime alerts
 #   ALERT_TO       Fallback recipient when a site has no account manager
+#   SENTRY_DSN     Optional error tracking
 
 [observability]
 enabled = true

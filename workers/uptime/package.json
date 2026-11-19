@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@reportpilot/core": "*",
+    "@sentry/cloudflare": "^11.14.0",
     "postgres": "^3.4.9"
   }
 }
