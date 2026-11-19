@@ -14,7 +14,7 @@ export interface ReportInput {
   report: ReportData;
   narrative: Narrative;
   org: ReportBrand;
-  client: { name: string };
+  client: { name: string; logoUrl?: string | null };
   preparedBy: string;
   managerNotes?: string | null;
   /** When the report was generated, for the appendix. */
