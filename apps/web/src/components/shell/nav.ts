@@ -1,7 +1,7 @@
 export interface NavItem {
   href: string;
   label: string;
-  icon: "overview" | "reports" | "clients" | "alerts" | "pipeline" | "settings";
+  icon: "overview" | "reports" | "clients" | "alerts" | "pipeline" | "outbox" | "settings";
   /** Count shown beside the label, e.g. reports waiting for review. */
   badgeKey?: "review" | "alerts";
 }
@@ -12,6 +12,7 @@ export const NAV: NavItem[] = [
   { href: "/clients", label: "Clients", icon: "clients" },
   { href: "/alerts", label: "Alerts", icon: "alerts", badgeKey: "alerts" },
   { href: "/pipeline", label: "Pipeline", icon: "pipeline" },
+  { href: "/outbox", label: "Sent emails", icon: "outbox" },
   { href: "/settings", label: "Branding", icon: "settings" },
 ];
 
