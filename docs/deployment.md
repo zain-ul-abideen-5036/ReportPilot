@@ -22,8 +22,13 @@ Everything below fits in free tiers. Allow about an hour the first time.
 
 ## 2. Dashboard
 
-**Cloudflare** (free, commercial use allowed) or **Vercel Hobby**
-(free, non-commercial). Both build `apps/web` with `npm run build`.
+**Vercel** is the quickest: import the repository, set the root directory to
+`apps/web` and deploy. PDF downloads work there out of the box. The full
+walkthrough is in **[vercel-deployment.md](vercel-deployment.md)**.
+
+Vercel's Hobby plan is free for non-commercial use; for paying clients use a
+Pro plan, or **Cloudflare**, which allows commercial use on its free plan.
+Either way the dashboard builds from `apps/web` with `npm run build`.
 
 Set `DATABASE_URL` and `APP_URL`. Without `DATABASE_URL` the dashboard runs
 in demo mode with the sample agency, which is how the public demo is hosted.
