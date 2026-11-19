@@ -14,6 +14,42 @@ export const PDF_OPTIONS = {
 
 type Browser = import("playwright").Browser;
 
+/** True on Vercel and AWS Lambda, where there is no bundled browser to launch. */
+export const isServerless = Boolean(process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME);
+
+/*
+ * Flags from @sparticuz/chromium that break printing: --single-process lets
+ * closing one page take the whole browser down; Playwright sets headless
+ * mode itself.
+ */
+const UNWANTED = [/^--single-process$/, /^--headless/];
+
+/*
+ * On serverless, @sparticuz/chromium provides a Chromium small enough for a
+ * function, and playwright-core is pinned (under the alias
+ * playwright-core-serverless) to the release built for the same Chromium:
+ * playwright-core 1.63.0 = Chromium 153 = @sparticuz/chromium 153.0.0.
+ * A mismatch crashes on launch. Upgrade the two together.
+ * Locally, the full playwright package and its own downloaded browser.
+ */
+async function launch(): Promise<Browser> {
+  if (isServerless) {
+    const [{ default: serverlessChromium }, { chromium }] = await Promise.all([
+      import("@sparticuz/chromium"),
+      import("playwright-core-serverless"),
+    ]);
+    serverlessChromium.setGraphicsMode = false;
+    const browser = await chromium.launch({
+      executablePath: await serverlessChromium.executablePath(),
+      args: serverlessChromium.args.filter((a: string) => !UNWANTED.some((r) => r.test(a))),
+      headless: true,
+    });
+    return browser as unknown as Browser;
+  }
+  const { chromium } = await import("playwright");
+  return chromium.launch();
+}
+
 /**
  * One Chromium per server process, launched on first use and reused after.
  * Launching a browser takes one to two seconds; opening a page takes
@@ -24,8 +60,7 @@ let shared: Promise<Browser> | null = null;
 
 function browser(): Promise<Browser> {
   if (!shared) {
-    shared = import("playwright").then(async ({ chromium }) => {
-      const b = await chromium.launch();
+    shared = launch().then((b) => {
       b.on("disconnected", () => { shared = null; });
       return b;
     });
@@ -34,8 +69,12 @@ function browser(): Promise<Browser> {
   return shared;
 }
 
-export async function printUrlToPdf(url: string, { cookie, maxBytes = 8 * 1024 * 1024 }: { cookie?: string; maxBytes?: number } = {}): Promise<Uint8Array> {
-  const context = await (await browser()).newContext(cookie ? { extraHTTPHeaders: { cookie } } : {});
+export async function printUrlToPdf(
+  url: string,
+  { cookie, headers = {}, maxBytes = 8 * 1024 * 1024 }: { cookie?: string; headers?: Record<string, string>; maxBytes?: number } = {},
+): Promise<Uint8Array> {
+  const extraHTTPHeaders = { ...headers, ...(cookie ? { cookie } : {}) };
+  const context = await (await browser()).newContext(Object.keys(extraHTTPHeaders).length ? { extraHTTPHeaders } : {});
   try {
     const page = await context.newPage();
     await page.emulateMedia({ media: "print" });
