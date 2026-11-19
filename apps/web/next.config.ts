@@ -1,3 +1,4 @@
+import path from "node:path";
 import type { NextConfig } from "next";
 
 const config: NextConfig = {
@@ -10,7 +11,15 @@ const config: NextConfig = {
   poweredByHeader: false,
   devIndicators: false,
   // Playwright ships a browser binary; keep it out of the server bundle.
-  serverExternalPackages: ["playwright", "playwright-core"],
+  serverExternalPackages: ["playwright", "playwright-core", "playwright-core-serverless", "@sparticuz/chromium"],
+  // A monorepo: trace dependencies from the repository root so workspace
+  // packages and hoisted node_modules end up in the Vercel functions.
+  outputFileTracingRoot: path.join(import.meta.dirname, "../.."),
+  // @sparticuz/chromium reads its compressed browser at runtime, which file
+  // tracing cannot see, so ship those files with the PDF function explicitly.
+  outputFileTracingIncludes: {
+    "/api/reports/[siteId]/pdf": ["../../node_modules/@sparticuz/chromium/bin/**"],
+  },
   experimental: {
     // Import only the icons each page uses instead of the whole barrel
     // (about 12,000 modules), which cuts dev compile time from ~25 s to ~2 s.
