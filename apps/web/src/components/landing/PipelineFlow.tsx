@@ -16,7 +16,7 @@ const NODES = [
  */
 export function PipelineFlow() {
   return (
-    <div className="reveal mt-14 rounded-[10px] bg-raised p-6 shadow-raised sm:p-10">
+    <div className="reveal ring-gradient mt-14 rounded-[10px] p-6 shadow-raised sm:p-10">
       <div className="relative hidden md:block">
         <div aria-hidden className="absolute top-6 right-[8%] left-[8%] h-px bg-line" />
         <div aria-hidden className="rule-gradient absolute top-6 right-[8%] left-[8%] h-px opacity-70" />

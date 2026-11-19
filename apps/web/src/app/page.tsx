@@ -66,14 +66,14 @@ export default function Landing() {
 
             <div className="flex justify-center lg:justify-end">
               <PageStack input={input}>
-                <div className="absolute top-[20%] left-0 flex items-center gap-3 rounded-xl bg-raised px-4 py-3 shadow-sheet motion-safe:animate-[float_7s_ease-in-out_infinite]">
+                <div className="ring-gradient absolute top-[20%] left-0 flex items-center gap-3 rounded-xl px-4 py-3 shadow-sheet motion-safe:animate-[float_7s_ease-in-out_infinite]">
                   <span className="flex size-9 items-center justify-center rounded-full bg-good-soft text-good"><TrendUp size={18} weight="bold" /></span>
                   <span>
                     <span className="block text-micro text-ink-3">Organic clicks, year on year</span>
                     <span className="block font-display text-title text-ink tnum">{formatSignedPct(clicks.yoy.pct)}</span>
                   </span>
                 </div>
-                <div className="absolute right-0 bottom-[3%] flex items-center gap-2.5 rounded-xl bg-raised px-4 py-3 shadow-sheet motion-safe:animate-[float_8s_ease-in-out_1.2s_infinite]">
+                <div className="ring-gradient absolute right-0 bottom-[3%] flex items-center gap-2.5 rounded-xl px-4 py-3 shadow-sheet motion-safe:animate-[float_8s_ease-in-out_1.2s_infinite]">
                   <CheckCircle size={20} weight="fill" className="text-accent" />
                   <span className="text-small"><span className="font-semibold text-ink">Approved</span> <span className="text-ink-3">by {row.manager.name.split(" ")[0]} · 09:12</span></span>
                 </div>
@@ -93,7 +93,7 @@ export default function Landing() {
           <BeforeAfter />
         </section>
 
-        <section id="how" className="relative scroll-mt-20 bg-surface py-24 md:py-32">
+        <section id="how" className="bg-wash relative scroll-mt-20 py-24 md:py-32">
           <div className="mx-auto max-w-[1240px] px-4 sm:px-6">
             <Chapter index="02" kicker="How it works" title="Six stages, all of them unattended but one.">
               On the 3rd of each month, once Google marks the previous month final, a scheduled job works through every site. It stops once, for you.
@@ -136,7 +136,7 @@ export default function Landing() {
           </div>
         </section>
 
-        <section className="bg-surface py-24 md:py-32">
+        <section className="bg-wash py-24 md:py-32">
           <div className="mx-auto max-w-[1240px] px-4 sm:px-6">
             <Chapter index="04" kicker="A month in practice" title="One client, one October, four numbers that matter." />
             <CaseStudy facts={facts} />
