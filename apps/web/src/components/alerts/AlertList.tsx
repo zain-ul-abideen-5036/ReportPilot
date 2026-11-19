@@ -1,15 +1,16 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useTransition } from "react";
 import {
-  Certificate, ChartLineDown, Globe, Gauge, PlugsConnected, MagnifyingGlass, Check, CheckCircle, Eye,
+  Certificate, ChartLineDown, Globe, Gauge, PlugsConnected, MagnifyingGlass, Check, CheckCircle, Eye, EnvelopeSimpleOpen,
 } from "@phosphor-icons/react";
 import type { AlertKind, AlertState } from "@reportpilot/demo";
+import { updateAlert } from "@/lib/actions";
 import { cn } from "@/lib/cn";
 
 export interface AlertView {
   id: string;
-  kind: AlertKind;
+  kind: AlertKind | "bounce";
   severity: "critical" | "warning";
   state: AlertState;
   title: string;
@@ -20,25 +21,40 @@ export interface AlertView {
   resolvedIn: string | null;
 }
 
-const ICON: Record<AlertKind, typeof Globe> = {
+const ICON: Record<AlertKind | "bounce", typeof Globe> = {
   downtime: PlugsConnected,
   ssl: Certificate,
   domain: Globe,
   traffic: ChartLineDown,
   vitals: Gauge,
   indexing: MagnifyingGlass,
+  bounce: EnvelopeSimpleOpen,
 };
 
 const STATE_LABEL: Record<AlertState, string> = { open: "Open", acknowledged: "Acknowledged", resolved: "Resolved" };
 
 /**
  * Alerts raised between reports. Acknowledge says "someone has this";
- * resolve closes it. Both are recorded in the audit log in production.
+ * resolve closes it. Both are saved and recorded in the audit log; the
+ * list updates at once and rolls back if the server refuses.
  */
-export function AlertList({ initial }: { initial: AlertView[] }) {
+export function AlertList({ initial, canEdit }: { initial: AlertView[]; canEdit: boolean }) {
   const [alerts, setAlerts] = useState(initial);
   const [filter, setFilter] = useState<AlertState | "all">("all");
-  const update = (id: string, state: AlertState) => setAlerts((xs) => xs.map((a) => (a.id === id ? { ...a, state } : a)));
+  const [error, setError] = useState<string | null>(null);
+  const [, start] = useTransition();
+  const update = (id: string, state: "acknowledged" | "resolved") => {
+    const before = alerts;
+    setAlerts((xs) => xs.map((a) => (a.id === id ? { ...a, state } : a)));
+    setError(null);
+    start(async () => {
+      const r = await updateAlert({ alertId: id, state });
+      if (!r.ok) {
+        setAlerts(before);
+        setError(r.error);
+      }
+    });
+  };
   const visible = alerts.filter((a) => filter === "all" || a.state === filter);
   const count = (s: AlertState) => alerts.filter((a) => a.state === s).length;
 
@@ -59,6 +75,7 @@ export function AlertList({ initial }: { initial: AlertView[] }) {
         ))}
       </div>
 
+      {error && <p role="alert" className="mb-4 rounded-md bg-act-soft p-3 text-small text-act">{error}</p>}
       <ul className="stagger flex flex-col gap-2">
         {visible.map((a) => {
           const Icon = ICON[a.kind];
@@ -89,7 +106,7 @@ export function AlertList({ initial }: { initial: AlertView[] }) {
                     </span>
                   </p>
                 </div>
-                <div className="hidden shrink-0 items-start gap-2 sm:flex">
+                <div className={cn("hidden shrink-0 items-start gap-2", canEdit && "sm:flex")}>
                   {a.state === "open" && (
                     <button onClick={() => update(a.id, "acknowledged")} className="press h-8 rounded-md bg-raised px-3 text-small font-medium text-ink-2 hairline hover:text-ink">
                       Acknowledge
@@ -102,7 +119,7 @@ export function AlertList({ initial }: { initial: AlertView[] }) {
                   )}
                 </div>
               </div>
-              {a.state !== "resolved" && (
+              {canEdit && a.state !== "resolved" && (
                 <div className="mt-3 flex gap-2 pl-13 sm:hidden">
                   {a.state === "open" && <button onClick={() => update(a.id, "acknowledged")} className="press h-8 flex-1 rounded-md px-3 text-small font-medium text-ink-2 hairline">Acknowledge</button>}
                   <button onClick={() => update(a.id, "resolved")} className="press h-8 flex-1 rounded-md bg-sunken px-3 text-small font-medium text-ink-2">Resolve</button>
