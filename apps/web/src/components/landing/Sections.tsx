@@ -28,16 +28,23 @@ export function Figures() {
     { to: 288, suffix: "", label: "uptime checks a day for every site, with alerts between reports" },
   ];
   return (
-    <dl className="grid grid-cols-2 lg:grid-cols-4">
+    <div className="relative">
+      <div aria-hidden className="rule-gradient h-px opacity-60" />
+      <dl className="grid grid-cols-2 lg:grid-cols-4">
       {figures.map((f, i) => (
-        <div key={f.label} className={`reveal px-1 py-9 sm:px-7 ${i % 2 ? "border-l border-line" : ""} ${i === 2 ? "lg:border-l" : ""} ${i > 1 ? "border-t border-line lg:border-t-0" : ""}`}>
-          <dt className={`font-display text-[3.25rem] leading-none tracking-[-0.035em] tnum sm:text-[4.5rem] ${f.strike ? "text-ink-4 line-through decoration-copper/60 decoration-2" : "text-gradient"}`}>
-            <CountUp to={f.to} prefix={f.prefix} suffix={f.suffix} />
+        <div key={f.label} className={`reveal fade-divider px-1 py-9 sm:px-7 ${i % 2 ? "fade-l" : ""} ${i === 2 ? "fade-l-lg" : ""} ${i > 1 ? "fade-t-sm" : ""}`}>
+          <dt className="font-display text-[3.25rem] leading-none tracking-[-0.035em] tnum sm:text-[4.5rem]">
+            {/* The gradient sits on the digits themselves, so every figure shows the full blend. */}
+            <span className={f.strike ? "text-ink-4 line-through decoration-copper/60 decoration-2" : "text-gradient pr-[0.04em]"}>
+              <CountUp to={f.to} prefix={f.prefix} suffix={f.suffix} />
+            </span>
           </dt>
           <dd className="mt-3 max-w-[26ch] text-small text-ink-3">{f.label}</dd>
         </div>
       ))}
-    </dl>
+      </dl>
+      <div aria-hidden className="rule-gradient h-px opacity-60" />
+    </div>
   );
 }
 
@@ -131,7 +138,7 @@ const STACK = [
 
 export function Stack() {
   return (
-    <div className="reveal mt-14 overflow-hidden rounded-[10px] bg-raised shadow-raised">
+    <div className="reveal ring-gradient mt-14 overflow-hidden rounded-[10px] shadow-raised">
       <table className="w-full text-left text-body">
         <caption className="sr-only">Free-tier services ReportPilot runs on</caption>
         <tbody className="divide-y divide-line">
