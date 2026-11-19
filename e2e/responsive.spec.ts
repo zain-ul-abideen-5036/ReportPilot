@@ -1,8 +1,10 @@
 import { expect, test } from "@playwright/test";
 
-const PAGES = ["/", "/dashboard", "/reports", "/reports/site_harlow", "/clients", "/clients/cli_harlow", "/clients/new", "/alerts", "/pipeline", "/settings"];
+const PAGES = ["/", "/sign-in", "/dashboard", "/reports", "/reports/site_harlow", "/clients", "/clients/cli_harlow", "/clients/new", "/alerts", "/pipeline", "/outbox", "/settings"];
 
 test.describe("responsive layout", () => {
+  // Ten server-rendered pages per width.
+  test.describe.configure({ timeout: 120_000 });
   for (const width of [360, 390, 768, 1024]) {
     test(`no horizontal page scroll at ${width}px`, async ({ page }) => {
       await page.setViewportSize({ width, height: 900 });
