@@ -30,7 +30,7 @@
 
 <br />
 
-<img src="docs/screenshots/landing.png" alt="The ReportPilot landing page: the headline The monthly report, written before you start work, with the word written in a pine-to-brass gradient, two buttons, Open the demo and Read a sample report, and on the right a fanned stack of real report pages with floating cards showing organic clicks up 30.6% year on year and a report approved by Tom at 09:12" width="100%" />
+<img src="docs/screenshots/hero.png" alt="The ReportPilot landing page: the headline The monthly report, written before you start work, with the word written in a pine-to-brass gradient, two buttons, Open the demo and Read a sample report, and on the right a fanned stack of real report pages with floating cards showing organic clicks up 30.6% year on year and a report approved by Tom at 09:12" width="100%" />
 
 ---
 

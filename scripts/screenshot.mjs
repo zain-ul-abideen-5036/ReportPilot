@@ -12,8 +12,10 @@ import { createRequire } from "node:module";
 const base = process.argv[2] ?? "http://localhost:3100";
 const out = "docs/screenshots";
 
+// The README banner: a 16:9 frame, which is exactly one hero.
+const hero = { name: "hero", path: "/", width: 1440, height: 810 };
+
 const desktop = [
-  { name: "landing", path: "/", height: 900 },
   { name: "overview", path: "/dashboard", height: 1000 },
   { name: "report-review", path: "/reports/site_harlow", height: 1000 },
   { name: "client", path: "/clients/cli_pennine", height: 1000 },
@@ -31,6 +33,17 @@ const mobile = [
 
 await mkdir(out, { recursive: true });
 const browser = await chromium.launch();
+
+{
+  const c = await browser.newContext({ viewport: { width: hero.width, height: hero.height }, deviceScaleFactor: 1.5, reducedMotion: "reduce" });
+  const page = await c.newPage();
+  await page.goto(base + hero.path, { waitUntil: "networkidle" });
+  await page.evaluate(() => document.fonts.ready);
+  await page.waitForTimeout(500);
+  await page.screenshot({ path: `${out}/${hero.name}.png` });
+  console.log(`saved ${hero.name}`);
+  await c.close();
+}
 
 const ctx = await browser.newContext({ viewport: { width: 1440, height: 1000 }, deviceScaleFactor: 1.5, reducedMotion: "reduce" });
 for (const shot of desktop) {
