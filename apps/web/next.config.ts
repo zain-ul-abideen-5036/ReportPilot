@@ -15,11 +15,16 @@ const config: NextConfig = {
   // A monorepo: trace dependencies from the repository root so workspace
   // packages and hoisted node_modules end up in the Vercel functions.
   outputFileTracingRoot: path.join(import.meta.dirname, "../.."),
-  // @sparticuz/chromium reads its compressed browser at runtime, which file
-  // tracing cannot see, so ship those files with the PDF function explicitly.
-  outputFileTracingIncludes: {
-    "/api/reports/[siteId]/pdf": ["../../node_modules/@sparticuz/chromium/bin/**"],
-  },
+  // @sparticuz/chromium reads its compressed browser at runtime, and
+  // playwright-core reads browsers.json with a computed path; file tracing
+  // sees neither, so ship both with every function that prints a PDF: the
+  // two download routes and the review page, whose "Send now" action prints.
+  outputFileTracingIncludes: Object.fromEntries(
+    ["/api/reports/[siteId]/pdf", "/r/[token]/pdf", "/reports/[siteId]"].map((route) => [
+      route,
+      ["../../node_modules/@sparticuz/chromium/bin/**", "../../node_modules/playwright-core-serverless/**"],
+    ]),
+  ),
   experimental: {
     // Import only the icons each page uses instead of the whole barrel
     // (about 12,000 modules), which cuts dev compile time from ~25 s to ~2 s.
