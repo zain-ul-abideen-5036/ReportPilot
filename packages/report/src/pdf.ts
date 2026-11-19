@@ -12,11 +12,31 @@ export const PDF_OPTIONS = {
   outline: true,
 } as const;
 
+type Browser = import("playwright").Browser;
+
+/**
+ * One Chromium per server process, launched on first use and reused after.
+ * Launching a browser takes one to two seconds; opening a page takes
+ * milliseconds, so this is the difference between a slow PDF button and a
+ * fast one.
+ */
+let shared: Promise<Browser> | null = null;
+
+function browser(): Promise<Browser> {
+  if (!shared) {
+    shared = import("playwright").then(async ({ chromium }) => {
+      const b = await chromium.launch();
+      b.on("disconnected", () => { shared = null; });
+      return b;
+    });
+    shared.catch(() => { shared = null; });
+  }
+  return shared;
+}
+
 export async function printUrlToPdf(url: string, { cookie, maxBytes = 8 * 1024 * 1024 }: { cookie?: string; maxBytes?: number } = {}): Promise<Uint8Array> {
-  const { chromium } = await import("playwright");
-  const browser = await chromium.launch();
+  const context = await (await browser()).newContext(cookie ? { extraHTTPHeaders: { cookie } } : {});
   try {
-    const context = await browser.newContext(cookie ? { extraHTTPHeaders: { cookie } } : {});
     const page = await context.newPage();
     await page.emulateMedia({ media: "print" });
     await page.goto(url, { waitUntil: "networkidle", timeout: 60_000 });
@@ -25,6 +45,6 @@ export async function printUrlToPdf(url: string, { cookie, maxBytes = 8 * 1024 *
     if (pdf.byteLength > maxBytes) throw new Error(`PDF is ${(pdf.byteLength / 1048576).toFixed(1)} MB, over the limit`);
     return pdf;
   } finally {
-    await browser.close();
+    await context.close();
   }
 }
