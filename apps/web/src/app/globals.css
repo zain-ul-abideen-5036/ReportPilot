@@ -37,7 +37,12 @@
   /* Signature gradients. Pine into brass; never purple into blue. */
   --grad-brand: linear-gradient(135deg, #1a4437 0%, #255a48 48%, #3c6f52 72%, #a9783a 128%);
   --grad-brand-hover: linear-gradient(135deg, #153a2f 0%, #1f4f3f 48%, #33644a 72%, #9a6c33 128%);
-  --grad-text: linear-gradient(100deg, #1d4a3c 0%, #2f6a52 42%, #b4813f 78%, #c0683a 100%);
+  --grad-text: linear-gradient(100deg, #163d31 0%, #23634c 32%, #5f7f4a 56%, #b2803d 80%, #c46a3a 100%);
+  --grad-border: linear-gradient(135deg, rgb(29 74 60 / 0.38), rgb(228 221 207 / 0.95) 38%, rgb(228 221 207 / 0.95) 62%, rgb(180 129 63 / 0.5));
+  --grad-wash:
+    radial-gradient(55% 75% at 0% 0%, rgb(240 186 132 / 0.13), transparent 62%),
+    radial-gradient(50% 70% at 100% 100%, rgb(152 199 172 / 0.16), transparent 62%),
+    linear-gradient(180deg, var(--surface), var(--paper));
   --grad-rule: linear-gradient(90deg, #1d4a3c, #6f9a7c 55%, #c99a5a);
   --grad-glow:
     radial-gradient(38% 46% at 14% 18%, rgb(240 186 132 / 0.42), transparent 70%),
@@ -251,7 +256,18 @@
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
+    -webkit-box-decoration-break: clone;
+    box-decoration-break: clone;
   }
+  /* A hairline border drawn as a gradient: pine at one corner, brass at the other. */
+  .ring-gradient {
+    border: 1px solid transparent;
+    background:
+      linear-gradient(var(--raised), var(--raised)) padding-box,
+      var(--grad-border) border-box;
+  }
+  .bg-wash { background: var(--grad-wash); }
+  .dot-gradient { background-image: linear-gradient(135deg, var(--accent), var(--brass)); }
   .rule-gradient { background-image: var(--grad-rule); }
   .display-soft { font-variation-settings: "SOFT" 100, "WONK" 0; }
 }
@@ -264,6 +280,8 @@
   inset: -40% -12% auto;
   height: 180%;
   background: var(--grad-glow);
+  -webkit-mask-image: linear-gradient(to bottom, #000 0%, #000 50%, transparent 100%);
+  mask-image: linear-gradient(to bottom, #000 0%, #000 50%, transparent 100%);
   z-index: -1;
   will-change: transform;
   backface-visibility: hidden;
@@ -348,4 +366,23 @@
     linear-gradient(to bottom, transparent, #000 30%, #000 70%, transparent);
   mask-composite: intersect;
   opacity: 0.85;
+}
+
+/* Dividers that fade at both ends, used in the figures strip. */
+.fade-divider { position: relative; }
+.fade-divider::before,
+.fade-divider::after { content: ""; position: absolute; pointer-events: none; }
+.fade-divider.fade-l::before,
+.fade-divider.fade-l-lg::before {
+  left: 0; top: 14%; bottom: 14%; width: 1px;
+  background: linear-gradient(to bottom, transparent, var(--line-strong), transparent);
+}
+.fade-divider.fade-t-sm::after {
+  top: 0; left: 10%; right: 10%; height: 1px;
+  background: linear-gradient(to right, transparent, var(--line-strong), transparent);
+}
+.fade-divider.fade-l-lg::before { display: none; }
+@media (min-width: 1024px) {
+  .fade-divider.fade-l-lg::before { display: block; }
+  .fade-divider.fade-t-sm::after { display: none; }
 }
