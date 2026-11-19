@@ -173,7 +173,10 @@ export async function saveNotes(db: AnyDb, actor: Actor, reportId: string, notes
 }
 
 /** Record a delivery made from the dashboard ("Send now"). */
-export async function markSent(db: AnyDb, actor: Actor, reportId: string, sent: { deliveryId: string | null; pdfKey: string | null; captured: boolean }) {
+export async function markSent(
+  db: AnyDb, actor: Actor, reportId: string,
+  sent: { deliveryId: string | null; pdfKey: string | null; captured: boolean; to?: string; subject?: string },
+) {
   return db.transaction(async (tx) => {
     const { report } = await ownedReport(tx, actor.orgId, reportId);
     const next = nextStatus("send", report.status, actor.role);
@@ -186,7 +189,7 @@ export async function markSent(db: AnyDb, actor: Actor, reportId: string, sent: 
     }).where(and(eq(reports.id, reportId), eq(reports.status, "approved"))).returning();
     if (!updated) throw new RepoError("This report was sent or changed a moment ago.", "invalid");
     if (sent.pdfKey) await tx.insert(reportVersions).values({ reportId, version, pdfKey: sent.pdfKey, reason: "sent", createdBy: actor.userId }).onConflictDoNothing();
-    await audit(tx, actor, sent.captured ? "email.captured" : "report.sent", "report", reportId, { deliveryId: sent.deliveryId, version });
+    await audit(tx, actor, sent.captured ? "email.captured" : "report.sent", "report", reportId, { deliveryId: sent.deliveryId, version, to: sent.to, subject: sent.subject });
     return updated;
   });
 }

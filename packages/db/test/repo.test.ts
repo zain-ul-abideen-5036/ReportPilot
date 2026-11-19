@@ -69,6 +69,14 @@ describe("review flow in the database", () => {
     expect(actions).toEqual(expect.arrayContaining(["report.submit", "report.approve", "report.sent", "client.created"]));
   });
 
+  it("records a captured email once, with who it was for", async () => {
+    await transitionReport(db, manager, reportId, "approve");
+    await markSent(db, manager, reportId, { deliveryId: null, pdfKey: null, captured: true, to: "ruth@harlow.test", subject: "Your October report" });
+    const captured = (await listAuditRecords(db, org.id)).filter((a) => a.entry.action === "email.captured");
+    expect(captured).toHaveLength(1);
+    expect(captured[0]!.entry.meta).toMatchObject({ to: "ruth@harlow.test", subject: "Your October report" });
+  });
+
   it("refuses illegal transitions and viewers", async () => {
     await expect(transitionReport(db, manager, reportId, "send")).rejects.toThrow(/cannot be sent/);
     await expect(transitionReport(db, viewer, reportId, "approve")).rejects.toMatchObject({ code: "forbidden" });

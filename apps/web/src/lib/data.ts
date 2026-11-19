@@ -374,7 +374,7 @@ export async function database() {
   const g = globalThis as unknown as { __rpDb?: { db: import("@reportpilot/db/repo").AnyDb; repo: typeof import("@reportpilot/db/repo") } };
   if (!g.__rpDb) {
     const [{ createDb }, repo] = await Promise.all([import("@reportpilot/db"), import("@reportpilot/db/repo")]);
-    g.__rpDb = { db: createDb(process.env.DATABASE_URL, { max: 5 }) as unknown as import("@reportpilot/db/repo").AnyDb, repo };
+    g.__rpDb = { db: createDb(process.env.DATABASE_URL, { max: Number(process.env.DATABASE_POOL_MAX ?? 5) }) as unknown as import("@reportpilot/db/repo").AnyDb, repo };
   }
   return g.__rpDb;
 }

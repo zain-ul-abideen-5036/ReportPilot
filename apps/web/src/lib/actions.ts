@@ -137,11 +137,9 @@ export async function sendNow(input: { siteId: string }): Promise<ActionResult<{
     const origin = await requestOrigin();
     const sent = await deliverFromDashboard({ row, org: ws.org, period: ws.period, origin });
     const { db, repo } = await database();
-    await repo.markSent(db, actorOf(session), row.reportId, { deliveryId: sent.deliveryId, pdfKey: sent.pdfKey, captured: sent.captured });
-    if (sent.captured) {
-      const { tables } = await import("@reportpilot/db");
-      await db.insert(tables.auditLog).values({ orgId: session.org, userId: session.uid, action: "email.captured", entity: "report", entityId: row.reportId, meta: { to: row.client.contact.email, subject } });
-    }
+    await repo.markSent(db, actorOf(session), row.reportId, {
+      deliveryId: sent.deliveryId, pdfKey: sent.pdfKey, captured: sent.captured, to: row.client.contact.email, subject,
+    });
     revalidatePath("/", "layout");
     return { ok: true, captured: sent.captured };
   });
