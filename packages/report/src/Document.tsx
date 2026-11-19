@@ -10,7 +10,16 @@ export const PAGE_COUNT = PAGES.length;
  * The full client report. Rendered inside the dashboard for review and,
  * unchanged, to static HTML for Playwright to print as the PDF.
  */
-export function ReportDocument(input: ReportInput & { id?: string; gap?: number; limit?: number }) {
+export interface DocumentOptions {
+  id?: string;
+  gap?: number;
+  /** Render only the first N pages. */
+  limit?: number;
+  /** Render a single page by index (0 = cover). Used for thumbnails. */
+  only?: number;
+}
+
+export function ReportDocument(input: ReportInput & DocumentOptions) {
   const ctx: ReportContext = { ...input, monthLabel: formatPeriod(input.report.period), pageCount: PAGE_COUNT };
   const style = {
     "--rp-primary": input.org.primary,
@@ -22,7 +31,9 @@ export function ReportDocument(input: ReportInput & { id?: string; gap?: number;
   return (
     <article className="rp" id={input.id} style={style} lang="en-GB">
       <style>{REPORT_CSS}</style>
-      {PAGES.slice(0, input.limit ?? PAGES.length).map((P, i) => <P key={i} ctx={ctx} />)}
+      {input.only !== undefined
+        ? PAGES.slice(input.only, input.only + 1).map((P, i) => <P key={i} ctx={ctx} />)
+        : PAGES.slice(0, input.limit ?? PAGES.length).map((P, i) => <P key={i} ctx={ctx} />)}
     </article>
   );
 }
