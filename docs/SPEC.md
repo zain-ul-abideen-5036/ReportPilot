@@ -258,14 +258,14 @@ fits comfortably in a free database.
 
 | Stage | What happens | Reliability measure |
 | --- | --- | --- |
-| 0 Plan | Create one report per active site, keyed on `site_id + period` | Idempotent: a unique index means re-running never duplicates |
+| 0 Plan | At 06:00 on each client's report day in their time zone, create one report per active site, keyed on `site_id + period` | Idempotent: a unique index means re-running never duplicates |
 | 1 Collect | Search Console (this month, last month, same month last year), speed snapshot, uptime rollups, indexing | Sources are independent; exponential backoff on 429 and 5xx |
 | 2 Calculate | Changes, striking distance, movers, branded split, uptime, Core Web Vitals | Pure functions with unit tests: same input, same output |
 | 3 Insights | A rules engine produces ranked findings, each carrying its figures | Findings can only quote their own figures |
 | 4 Narrative | Templates phrase the findings; AI optionally rewrites the summary | Number check: any figure not in the source → AI text discarded |
 | 5 Render | HTML with brand tokens → Playwright PDF (A4, tagged, outlined) | Size check; saved to R2 under a versioned key |
 | 6 Review | Draft appears in the dashboard; the manager adds a note and approves, or auto-send is on | Every change is versioned and audit-logged |
-| 7 Deliver | Email with PDF and private link | Retries; bounces flag the contact; dry-run mode |
+| 7 Deliver | Email with PDF and private link; Resend id and delivery status stored | Retries; the bounce webhook flags the contact; dry-run mode |
 | 8 Monitor | Heartbeat pings at start and finish | An email if the job didn't run or stalled |
 
 ---
@@ -323,19 +323,18 @@ fits comfortably in a free database.
 
 | Week | Milestone | Status |
 | --- | --- | --- |
-| 1 | Repository, CI, schema, organisations, clients, sites | Done |
-| 2 | Uptime worker, incidents, alerts, SSL and domain checks | Done |
-| 3 | Search Console via service account, aggregates | Done |
+| 1 | Repository, CI with lint, schema, email-link sign-in, organisations, clients, sites | Done |
+| 2 | Uptime worker, incidents, alerts (downtime, SSL, domain, traffic, vitals, indexing, bounces), SSL and domain checks | Done |
+| 3 | Search Console via service account: 16-month backfill, daily and monthly aggregates | Done |
 | 4 | PageSpeed median of three, CrUX history, sitemaps, URL Inspection | Done |
 | 5 | Calculations and insights engine with unit tests | Done |
-| 6 | Report template, SVG charts, PDF rendering, storage | Done |
-| 7 | Review and approval flow, delivery, private links, branding | Done (demo mode) |
-| 8 | Narrative with number check, dry run, visual tests, docs, demo data | Done |
+| 6 | Report template, SVG charts, PDF rendering, R2 storage, versions | Done |
+| 7 | Review and approval flow saved to the database, Resend delivery with bounce webhook, revocable signed links, branding with logos | Done |
+| 8 | Narrative with number check, dry run, visual and accessibility tests, Sentry, docs, demo data | Done |
 
-**Known gaps** are listed honestly in the [README](../README.md#known-gaps).
-The most significant: dashboard actions update local state in demo mode and
-are not yet persisted through server actions, and authentication is not yet
-wired to a provider.
+**Known gaps** are listed honestly in the [README](../README.md#project-status):
+GA4 (v2), a team-invitation screen, a CI check against a hosted database, and
+multi-region uptime.
 
 ---
 
