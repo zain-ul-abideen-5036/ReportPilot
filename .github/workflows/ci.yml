@@ -14,7 +14,7 @@ permissions:
 
 jobs:
   check:
-    name: Typecheck, test and build
+    name: Typecheck, lint, test and build
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -26,7 +26,10 @@ jobs:
       - run: npm ci
       - name: Typecheck every workspace
         run: npm run typecheck
-      - name: Unit and contract tests
+      - name: Lint
+        run: npm run lint
+      - name: Unit, contract and database tests
+        # The database tests run real SQL against PGlite (Postgres in process) with the migrations applied.
         run: npx vitest run --coverage.enabled=false
       - name: Build the dashboard
         run: npm run build
