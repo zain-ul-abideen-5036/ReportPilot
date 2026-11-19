@@ -7,6 +7,7 @@ import { MAX_ROWS, SearchConsole } from "../src/gsc";
 import { parsePsi, pickMedianRun, type PsiResponse } from "../src/psi";
 import { parseHistory } from "../src/crux";
 import { parseExpiry, registrableDomain } from "../src/rdap";
+import { parseDeliveryEvent, signWebhook, verifyWebhook } from "../src/resend";
 
 const fixture = <T>(name: string): T => JSON.parse(readFileSync(new URL(`./fixtures/${name}`, import.meta.url), "utf8")) as T;
 const json = (body: unknown, status = 200, headers: Record<string, string> = {}) =>
@@ -166,5 +167,36 @@ describe("RDAP", () => {
     expect(parseExpiry({ events: [{ eventAction: "registration", eventDate: "2019-01-01T00:00:00Z" }, { eventAction: "expiration", eventDate: "2027-03-14T10:00:00Z" }] }))
       .toBe("2027-03-14T10:00:00.000Z");
     expect(parseExpiry({})).toBeNull();
+  });
+});
+
+describe("Resend webhooks", () => {
+  const secret = `whsec_${Buffer.from("a-test-signing-secret-32-bytes!!").toString("base64")}`;
+  const body = JSON.stringify({ type: "email.bounced", created_at: "2026-11-04T09:00:00Z", data: { email_id: "re_1", to: ["ruth@harlow.test"] } });
+  const now = new Date("2026-11-04T09:00:30Z");
+  const ts = Math.floor(Date.parse("2026-11-04T09:00:00Z") / 1000);
+
+  it("accepts a correctly signed payload", () => {
+    const signature = signWebhook(secret, "msg_1", ts, body);
+    expect(verifyWebhook(secret, { id: "msg_1", timestamp: String(ts), signature }, body, now)).toBe(true);
+  });
+
+  it("rejects a tampered body, a wrong secret and a stale timestamp", () => {
+    const signature = signWebhook(secret, "msg_1", ts, body);
+    expect(verifyWebhook(secret, { id: "msg_1", timestamp: String(ts), signature }, body.replace("re_1", "re_2"), now)).toBe(false);
+    expect(verifyWebhook(`whsec_${Buffer.from("another-secret").toString("base64")}`, { id: "msg_1", timestamp: String(ts), signature }, body, now)).toBe(false);
+    expect(verifyWebhook(secret, { id: "msg_1", timestamp: String(ts), signature }, body, new Date("2026-11-04T09:10:00Z"))).toBe(false);
+    expect(verifyWebhook(secret, { id: null, timestamp: String(ts), signature }, body, now)).toBe(false);
+  });
+
+  it("accepts any of several signatures during secret rotation", () => {
+    const good = signWebhook(secret, "msg_1", ts, body);
+    expect(verifyWebhook(secret, { id: "msg_1", timestamp: String(ts), signature: `v1,bm9wZQ== ${good}` }, body, now)).toBe(true);
+  });
+
+  it("parses bounces and ignores events it does not handle", () => {
+    expect(parseDeliveryEvent(JSON.parse(body))).toEqual({ type: "bounced", emailId: "re_1", to: ["ruth@harlow.test"], at: "2026-11-04T09:00:00Z" });
+    expect(parseDeliveryEvent({ type: "email.opened", data: { email_id: "re_1" } })).toBeNull();
+    expect(parseDeliveryEvent("nonsense")).toBeNull();
   });
 });
