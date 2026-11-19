@@ -20,8 +20,12 @@ export interface PipelineSite {
   aiEnabled: boolean;
   contacts: Array<{ name: string; email: string }>;
   managerName: string;
-  brand: { name: string; primary: string; accent: string; footer: string; senderName: string; senderEmail: string };
+  /** Public URL of the client's logo for the cover, when one was uploaded. */
+  clientLogoUrl?: string | null;
+  brand: { name: string; primary: string; accent: string; footer: string; senderName: string; senderEmail: string; logoUrl?: string | null };
 }
+
+export type DeliveryStatus = "queued" | "delivered" | "bounced" | "complained";
 
 export interface StoredReport {
   id: string;
@@ -37,6 +41,17 @@ export interface StoredReport {
   pdfKey: string | null;
   shareToken: string | null;
   sentAt: string | null;
+  /** Bumped on every render after the first, so a sent PDF is never overwritten. */
+  version: number;
+  deliveryId: string | null;
+  deliveryStatus: DeliveryStatus | null;
+}
+
+export interface VersionEntry {
+  reportId: string;
+  version: number;
+  pdfKey: string;
+  reason: "render" | "rerender" | "sent";
 }
 
 export interface PipelineStore {
@@ -46,12 +61,15 @@ export interface PipelineStore {
   updateReport(id: string, patch: Partial<StoredReport>): Promise<StoredReport>;
   recordRun(run: { siteId: string; period: string; stage: Stage; status: "running" | "succeeded" | "failed" | "waiting"; attempts: number; error?: string | null }): Promise<void>;
   audit(entry: { orgId: string; action: string; entityId: string; meta?: Record<string, unknown> }): Promise<void>;
+  /** One row per rendered PDF: which file, and why it was made. */
+  recordVersion(entry: VersionEntry): Promise<void>;
 }
 
 export function memoryStore(sites: PipelineSite[]) {
   const reports = new Map<string, StoredReport>();
   const runs: Array<Parameters<PipelineStore["recordRun"]>[0]> = [];
   const auditLog: Array<Parameters<PipelineStore["audit"]>[0]> = [];
+  const versions: VersionEntry[] = [];
   let seq = 0;
   const store: PipelineStore = {
     async sites(filter) {
@@ -64,6 +82,7 @@ export function memoryStore(sites: PipelineSite[]) {
       const r: StoredReport = {
         id: `rep_${++seq}`, siteId, period, status: "collecting", stage: null, collected: null, data: null,
         narrative: null, managerNotes: null, pdfKey: null, shareToken: null, sentAt: null,
+        version: 1, deliveryId: null, deliveryStatus: null,
       };
       reports.set(key, r);
       return r;
@@ -76,6 +95,7 @@ export function memoryStore(sites: PipelineSite[]) {
     },
     async recordRun(run) { runs.push(run); },
     async audit(entry) { auditLog.push(entry); },
+    async recordVersion(entry) { versions.push(entry); },
   };
-  return { store, reports, runs, auditLog };
+  return { store, reports, runs, auditLog, versions };
 }
