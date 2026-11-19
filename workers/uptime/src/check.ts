@@ -19,7 +19,21 @@ export interface CheckResult {
   status: number | null;
   ms: number;
   error: string | null;
+  /**
+   * What we learned about TLS. Workers cannot read the peer certificate,
+   * so expiry dates come from the weekly job; here we record whether the
+   * handshake worked, which is what matters minute to minute.
+   */
+  tls: "ok" | "failed" | "none";
 }
+
+const TLS_FAILURE = /ssl|tls|certificate|handshake/i;
+
+/** Cloudflare's own status codes for broken origin TLS. */
+const TLS_STATUS: Record<number, string> = {
+  525: "TLS handshake with the site failed",
+  526: "The site's SSL certificate is invalid or expired",
+};
 
 export type Fetcher = (url: string, init?: RequestInit) => Promise<Response>;
 
@@ -32,6 +46,7 @@ const ERROR_SIGNATURES = [
 
 export async function checkSite(site: Pick<MonitoredSite, "url" | "keyword">, fetcher: Fetcher = fetch, timeoutMs = 10_000, now = () => Date.now()): Promise<CheckResult> {
   const started = now();
+  const https = site.url.startsWith("https:");
   try {
     const res = await fetcher(site.url, {
       redirect: "follow",
@@ -40,19 +55,23 @@ export async function checkSite(site: Pick<MonitoredSite, "url" | "keyword">, fe
       cf: { cacheTtl: 0 },
     } as RequestInit);
     const ms = now() - started;
-    if (res.status >= 400) return { ok: false, status: res.status, ms, error: `HTTP ${res.status} ${res.statusText}`.trim() };
+    if (TLS_STATUS[res.status]) return { ok: false, status: res.status, ms, error: TLS_STATUS[res.status]!, tls: "failed" };
+    const tls = https ? "ok" : "none";
+    if (res.status >= 400) return { ok: false, status: res.status, ms, error: `HTTP ${res.status} ${res.statusText}`.trim(), tls };
     // Read at most ~512 KB; enough to find a brand name, cheap on CPU.
     const body = (await res.text()).slice(0, 512_000);
     if (site.keyword && !body.toLowerCase().includes(site.keyword.toLowerCase())) {
-      return { ok: false, status: res.status, ms, error: "Expected text not found on page" };
+      return { ok: false, status: res.status, ms, error: "Expected text not found on page", tls };
     }
     const signature = ERROR_SIGNATURES.find((r) => r.test(body.slice(0, 20_000)));
-    if (!site.keyword && signature) return { ok: false, status: res.status, ms, error: "Page shows an error message" };
-    return { ok: true, status: res.status, ms, error: null };
+    if (!site.keyword && signature) return { ok: false, status: res.status, ms, error: "Page shows an error message", tls };
+    return { ok: true, status: res.status, ms, error: null, tls };
   } catch (err) {
     const ms = now() - started;
     const name = (err as Error).name;
-    const error = name === "TimeoutError" || name === "AbortError" ? `Connection timed out after ${Math.round(timeoutMs / 1000)} s` : (err as Error).message;
-    return { ok: false, status: null, ms, error };
+    const message = (err as Error).message;
+    if (https && TLS_FAILURE.test(message)) return { ok: false, status: null, ms, error: `TLS error: ${message}`, tls: "failed" };
+    const error = name === "TimeoutError" || name === "AbortError" ? `Connection timed out after ${Math.round(timeoutMs / 1000)} s` : message;
+    return { ok: false, status: null, ms, error, tls: "none" };
   }
 }

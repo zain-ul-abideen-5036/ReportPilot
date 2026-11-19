@@ -33,16 +33,26 @@ export function postgresStore(sql: import("postgres").Sql): UptimeStore {
       }));
     },
     async recordCheck(siteId, at, r) {
-      await sql`insert into uptime_checks (site_id, checked_at, ok, status, ms, error)
-                values (${siteId}, ${at}, ${r.ok}, ${r.status}, ${r.ms}, ${r.error})
+      await sql`insert into uptime_checks (site_id, checked_at, ok, status, ms, error, tls)
+                values (${siteId}, ${at}, ${r.ok}, ${r.status}, ${r.ms}, ${r.error}, ${r.tls})
                 on conflict do nothing`;
     },
     async openIncident(siteId, at, cause) {
-      const [row] = await sql<Array<{ id: string }>>`insert into incidents (site_id, started_at, cause) values (${siteId}, ${at}, ${cause}) returning id`;
-      return row!.id;
+      // The incident and its dashboard alert are written together, so the
+      // alerts page and the email never disagree.
+      return sql.begin(async (tx) => {
+        const [row] = await tx<Array<{ id: string }>>`insert into incidents (site_id, started_at, cause) values (${siteId}, ${at}, ${cause}) returning id`;
+        await tx`insert into alerts (site_id, kind, severity, title, detail, dedupe_key, raised_at)
+                 values (${siteId}, 'downtime', 'critical', 'Site is down', ${cause}, ${`downtime:${row!.id}`}, ${at})
+                 on conflict (site_id, dedupe_key) do nothing`;
+        return row!.id;
+      });
     },
     async resolveIncident(id, at) {
-      await sql`update incidents set resolved_at = ${at} where id = ${id} and resolved_at is null`;
+      await sql.begin(async (tx) => {
+        await tx`update incidents set resolved_at = ${at} where id = ${id} and resolved_at is null`;
+        await tx`update alerts set state = 'resolved', resolved_at = ${at} where dedupe_key = ${`downtime:${id}`} and state <> 'resolved'`;
+      });
     },
     async markNotified(id, at) {
       await sql`update incidents set notified_at = ${at} where id = ${id}`;

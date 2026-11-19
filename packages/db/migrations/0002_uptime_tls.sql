@@ -1,0 +1,1 @@
+ALTER TABLE "uptime_checks" ADD COLUMN "tls" text;

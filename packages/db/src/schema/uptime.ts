@@ -11,6 +11,8 @@ export const uptimeChecks = pgTable(
     status: integer("status"),
     ms: integer("ms"),
     error: text("error"),
+    /** "ok" when the HTTPS handshake succeeded, "failed" when it did not, "none" for plain HTTP or no connection. */
+    tls: text("tls").$type<"ok" | "failed" | "none">(),
   },
   (t) => [primaryKey({ columns: [t.siteId, t.checkedAt] })],
 );

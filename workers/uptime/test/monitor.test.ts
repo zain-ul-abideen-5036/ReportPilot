@@ -50,6 +50,23 @@ describe("checkSite", () => {
     const r = await checkSite(site(), async () => { const e = new Error("timeout"); e.name = "TimeoutError"; throw e; });
     expect(r.error).toBe("Connection timed out after 10 s");
   });
+
+  it("records a successful HTTPS handshake", async () => {
+    const r = await checkSite(site(), async () => page("Harlow & Finch"));
+    expect(r.tls).toBe("ok");
+  });
+
+  it("names TLS failures, including Cloudflare's 525 and 526", async () => {
+    const thrown = await checkSite(site(), async () => { throw new Error("SSL certificate has expired"); });
+    expect(thrown).toMatchObject({ ok: false, tls: "failed", error: "TLS error: SSL certificate has expired" });
+    const invalid = await checkSite(site(), async () => page("", 526));
+    expect(invalid).toMatchObject({ ok: false, tls: "failed", error: "The site's SSL certificate is invalid or expired" });
+  });
+
+  it("marks plain HTTP sites as having no TLS", async () => {
+    const r = await checkSite(site({ url: "http://example.test/" }), async () => page("Harlow & Finch"));
+    expect(r.tls).toBe("none");
+  });
 });
 
 describe("two-failure rule", () => {
