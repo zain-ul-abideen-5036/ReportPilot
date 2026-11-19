@@ -1,5 +1,4 @@
 import "server-only";
-import { cache } from "react";
 import { buildReport, templateNarrative, type Narrative, type ReportData } from "@reportpilot/core";
 import {
   ALERTS, AUDIT, CLIENTS, DELIVERY_HISTORY, DEMO_NOW, DEMO_PERIOD, JOB_RUNS, ORG, SITES, USERS, collectDemo,
@@ -27,10 +26,26 @@ export interface SiteRow {
   openAlerts: DemoAlert[];
 }
 
-export const getReport = cache((siteId: string): ReportData => buildReport(collectDemo(siteId, period), now));
+/*
+ * The demo agency is computed once per server process and reused by every
+ * request. It never changes at runtime, so recomputing it per request (as
+ * React's cache() would) only made navigation slower.
+ */
+const reports = new Map<string, ReportData>();
 
-export const listSites = cache((): SiteRow[] =>
-  SITES.map((site) => {
+export function getReport(siteId: string): ReportData {
+  let r = reports.get(siteId);
+  if (!r) {
+    r = buildReport(collectDemo(siteId, period), now);
+    reports.set(siteId, r);
+  }
+  return r;
+}
+
+let siteRows: SiteRow[] | null = null;
+
+export function listSites(): SiteRow[] {
+  siteRows ??= SITES.map((site) => {
     const client = CLIENTS.find((c) => c.id === site.clientId)!;
     const report = getReport(site.id);
     return {
@@ -42,8 +57,9 @@ export const listSites = cache((): SiteRow[] =>
       manager: USERS.find((u) => u.id === client.manager)!,
       openAlerts: ALERTS.filter((a) => a.siteId === site.id && a.state !== "resolved"),
     };
-  }),
-);
+  });
+  return siteRows;
+}
 
 export function getSite(siteId: string): SiteRow | undefined {
   return listSites().find((r) => r.site.id === siteId);
