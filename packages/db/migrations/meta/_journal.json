@@ -8,6 +8,13 @@
       "when": 1795035344665,
       "tag": "0000_init",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1795078922273,
+      "tag": "0001_auth_versions_sitemaps_delivery",
+      "breakpoints": true
     }
   ]
 }

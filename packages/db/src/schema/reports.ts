@@ -1,4 +1,4 @@
-import { index, integer, jsonb, pgEnum, pgTable, text, timestamp, uniqueIndex, uuid } from "drizzle-orm/pg-core";
+import { index, integer, jsonb, pgEnum, pgTable, primaryKey, text, timestamp, uniqueIndex, uuid } from "drizzle-orm/pg-core";
 import type { Narrative, ReportData } from "@reportpilot/core";
 import { sites } from "./clients";
 import { organizations, users } from "./orgs";
@@ -30,12 +30,37 @@ export const reports = pgTable(
     approvedBy: uuid("approved_by").references(() => users.id, { onDelete: "set null" }),
     approvedAt: timestamp("approved_at", { withTimezone: true }),
     sentAt: timestamp("sent_at", { withTimezone: true }),
+    /** Resend's message id, so delivery and bounce webhooks can find the report. */
     deliveryId: text("delivery_id"),
+    deliveryStatus: text("delivery_status").$type<"queued" | "delivered" | "bounced" | "complained">(),
+    deliveryUpdatedAt: timestamp("delivery_updated_at", { withTimezone: true }),
     version: integer("version").notNull().default(1),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
   },
-  (t) => [uniqueIndex("reports_site_period_uq").on(t.siteId, t.period), index("reports_status_idx").on(t.status)],
+  (t) => [
+    uniqueIndex("reports_site_period_uq").on(t.siteId, t.period),
+    index("reports_status_idx").on(t.status),
+    index("reports_delivery_idx").on(t.deliveryId),
+  ],
+);
+
+/**
+ * Every rendered PDF is kept as a version. Re-rendering after a note
+ * changes bumps reports.version and adds a row here, so "what did the
+ * client actually receive?" always has an answer.
+ */
+export const reportVersions = pgTable(
+  "report_versions",
+  {
+    reportId: uuid("report_id").notNull().references(() => reports.id, { onDelete: "cascade" }),
+    version: integer("version").notNull(),
+    pdfKey: text("pdf_key").notNull(),
+    reason: text("reason").notNull().default("render"),
+    createdBy: uuid("created_by").references(() => users.id, { onDelete: "set null" }),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [primaryKey({ columns: [t.reportId, t.version] })],
 );
 
 export const jobRuns = pgTable(
@@ -76,7 +101,7 @@ export const alerts = pgTable(
   {
     id: uuid("id").primaryKey().defaultRandom(),
     siteId: uuid("site_id").notNull().references(() => sites.id, { onDelete: "cascade" }),
-    kind: text("kind").$type<"downtime" | "ssl" | "domain" | "traffic" | "vitals" | "indexing">().notNull(),
+    kind: text("kind").$type<"downtime" | "ssl" | "domain" | "traffic" | "vitals" | "indexing" | "bounce">().notNull(),
     severity: text("severity").$type<"critical" | "warning">().notNull(),
     state: text("state").$type<"open" | "acknowledged" | "resolved">().notNull().default("open"),
     title: text("title").notNull(),

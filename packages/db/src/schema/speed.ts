@@ -48,3 +48,18 @@ export const indexStatus = pgTable(
   },
   (t) => [primaryKey({ columns: [t.siteId, t.url, t.checkedAt] }), index("index_status_site_idx").on(t.siteId)],
 );
+
+/** Sitemaps from sitemaps.list, refreshed by the weekly job. */
+export const sitemapStatus = pgTable(
+  "sitemap_status",
+  {
+    siteId: uuid("site_id").notNull().references(() => sites.id, { onDelete: "cascade" }),
+    path: text("path").notNull(),
+    errors: integer("errors").notNull().default(0),
+    warnings: integer("warnings").notNull().default(0),
+    submitted: integer("submitted").notNull().default(0),
+    lastDownloaded: timestamp("last_downloaded", { withTimezone: true }),
+    checkedAt: timestamp("checked_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [primaryKey({ columns: [t.siteId, t.path] })],
+);

@@ -42,6 +42,8 @@ export const sites = pgTable(
     keyPages: text("key_pages").array().notNull().default([]),
     uptimeKeyword: text("uptime_keyword"),
     active: boolean("active").notNull().default(true),
+    /** Set once the 16-month Search Console backfill has finished; null means the daily job still owes one. */
+    backfilledAt: timestamp("backfilled_at", { withTimezone: true }),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (t) => [index("sites_client_idx").on(t.clientId)],

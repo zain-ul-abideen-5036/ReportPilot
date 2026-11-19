@@ -31,3 +31,16 @@ export const memberships = pgTable(
   },
   (t) => [primaryKey({ columns: [t.userId, t.orgId] })],
 );
+
+/**
+ * One-time sign-in links. Only a SHA-256 hash of the token is stored, so a
+ * database leak cannot be replayed into a session. Links expire after 15
+ * minutes and work once.
+ */
+export const loginTokens = pgTable("login_tokens", {
+  tokenHash: text("token_hash").primaryKey(),
+  email: text("email").notNull(),
+  expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+  usedAt: timestamp("used_at", { withTimezone: true }),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+});
