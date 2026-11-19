@@ -97,6 +97,7 @@ export const REPORT_CSS = /* css */ `
   display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; letter-spacing: 0.02em;
 }
 .rp-cover-main { margin-top: auto; }
+.rp-cover-client-logo { display: block; max-height: 56px; max-width: 220px; object-fit: contain; margin-bottom: 28px; }
 .rp-cover-month { font-family: var(--rp-serif); font-style: italic; font-size: 20px; color: var(--rp-accent); }
 .rp-cover-client { margin-top: 10px !important; font-family: var(--rp-serif); font-weight: 400; font-size: 64px; line-height: 1; letter-spacing: -0.03em; max-width: 620px; }
 .rp-cover-sub { margin-top: 18px !important; font-size: 14px; color: var(--rp-ink-2); }

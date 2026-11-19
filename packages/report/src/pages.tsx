@@ -9,7 +9,14 @@ import type { ReportContext } from "./types";
 const DEVICE: Record<string, string> = { MOBILE: "Mobile", DESKTOP: "Desktop", TABLET: "Tablet" };
 const COUNTRY: Record<string, string> = {
   gbr: "United Kingdom", irl: "Ireland", usa: "United States", aus: "Australia", deu: "Germany", fra: "France", esp: "Spain",
+  can: "Canada", nld: "Netherlands", ind: "India", pak: "Pakistan", nzl: "New Zealand", ita: "Italy", bel: "Belgium",
+  swe: "Sweden", che: "Switzerland", pol: "Poland", prt: "Portugal", are: "UAE", zaf: "South Africa", sgp: "Singapore", zzz: "Unknown",
 };
+
+/** Search Console reports countries as ISO 3166 alpha-3 codes ("gbr"). */
+export function countryName(code: string): string {
+  return COUNTRY[code.toLowerCase()] ?? code.toUpperCase();
+}
 
 function kpiValue(k: Kpi): string {
   if (k.key === "ctr") return formatPct(k.value);
@@ -31,6 +38,7 @@ export function Cover({ ctx }: { ctx: ReportContext }) {
           {ctx.org.name}
         </div>
         <div className="rp-cover-main">
+          {ctx.client.logoUrl && <img className="rp-cover-client-logo" src={ctx.client.logoUrl} alt={`${ctx.client.name} logo`} />}
           <p className="rp-cover-month">Monthly report · {ctx.monthLabel}</p>
           <h1 className="rp-cover-client">{ctx.client.name}</h1>
           <p className="rp-cover-sub">Search, speed and reliability for {prettyUrl(ctx.report.siteUrl)}</p>
@@ -114,11 +122,21 @@ export function Search({ ctx }: { ctx: ReportContext }) {
             <h3 className="rp-h3">Daily clicks <span>solid: {ctx.monthLabel} · dashed: previous month</span></h3>
             <TrendChart
               title={`Daily organic clicks in ${ctx.monthLabel}`}
-              width={674} height={170}
+              width={674} height={128}
               labels={s.daily.map((d) => formatDayShort(d.day))}
               series={[
                 { name: "Previous month", values: s.dailyPrevious.map((d) => d.clicks), variant: "ghost" },
                 { name: "Clicks", values: s.daily.map((d) => d.clicks), variant: "primary" },
+              ]}
+            />
+            <h3 className="rp-h3" style={{ marginTop: 6 }}>Daily impressions <span>how often the site appeared in results</span></h3>
+            <TrendChart
+              title={`Daily impressions in ${ctx.monthLabel}`}
+              width={674} height={78} labelCount={4}
+              labels={s.daily.map((d) => formatDayShort(d.day))}
+              series={[
+                { name: "Previous month", values: s.dailyPrevious.map((d) => d.impressions), variant: "ghost" },
+                { name: "Impressions", values: s.daily.map((d) => d.impressions), variant: "secondary" },
               ]}
             />
           </figure>
@@ -163,18 +181,30 @@ export function Search({ ctx }: { ctx: ReportContext }) {
               </table>
             </div>
             <div>
-              <h3 className="rp-h3">Devices</h3>
+              <h3 className="rp-h3">Devices and countries <span>share of clicks</span></h3>
               <SplitBar title="Clicks by device" parts={s.devices.map((d) => ({ label: d.key, value: d.clicks }))} />
-              <table className="rp-table" style={{ marginTop: 10 }}>
-                <tbody>
-                  {s.devices.map((d, i) => (
-                    <tr key={d.key}>
-                      <td><span className="rp-dot" style={{ background: splitTone(i), marginRight: 6 }} />{DEVICE[d.key] ?? d.key}</td>
-                      <td className="num">{formatPct(d.share, 0)}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1.25fr", gap: 14, marginTop: 8 }}>
+                <table className="rp-table">
+                  <tbody>
+                    {s.devices.map((d, i) => (
+                      <tr key={d.key}>
+                        <td><span className="rp-dot" style={{ background: splitTone(i), marginRight: 6 }} />{DEVICE[d.key] ?? d.key}</td>
+                        <td className="num">{formatPct(d.share, 0)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+                <table className="rp-table">
+                  <tbody>
+                    {s.countries.slice(0, 4).map((c) => (
+                      <tr key={c.key}>
+                        <td className="label">{countryName(c.key)}</td>
+                        <td className="num">{formatPct(c.share, 0)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
               {s.branded && (
                 <p className="rp-muted" style={{ marginTop: 12, fontSize: 10 }}>
                   <strong style={{ color: "var(--rp-ink)" }}>{formatPct(s.branded.nonBrandedShare, 0)}</strong> of clicks came from people who did not search for the brand by name.
@@ -243,7 +273,7 @@ export function Opportunities({ ctx }: { ctx: ReportContext }) {
 
       {ix && (
         <div className="rp-section" style={{ marginTop: "auto" }}>
-          <h3 className="rp-h3">Indexing health <span>key pages in Google's index</span></h3>
+          <h3 className="rp-h3">Indexing health <span>key pages in Google's index, and sitemap errors</span></h3>
           <table className="rp-table">
             <tbody>
               {ix.pages.map((p) => (
@@ -251,6 +281,15 @@ export function Opportunities({ ctx }: { ctx: ReportContext }) {
                   <td className="label">{urlPath(p.url)}</td>
                   <td className={p.verdict === "PASS" ? "rp-up" : p.verdict === "FAIL" ? "rp-down" : "rp-flat"}>{p.verdict === "PASS" ? "✓ Indexed" : p.verdict === "FAIL" ? "✕ Not indexed" : "Partly"}</td>
                   <td className="rp-muted">{p.coverageState}</td>
+                </tr>
+              ))}
+              {ix.sitemaps.map((m) => (
+                <tr key={m.path}>
+                  <td className="label">Sitemap {urlPath(m.path)}</td>
+                  <td className={m.errors > 0 ? "rp-down" : m.warnings > 0 ? "rp-flat" : "rp-up"}>
+                    {m.errors > 0 ? `✕ ${formatInt(m.errors)} ${m.errors === 1 ? "error" : "errors"}` : m.warnings > 0 ? `${formatInt(m.warnings)} ${m.warnings === 1 ? "warning" : "warnings"}` : "✓ No errors"}
+                  </td>
+                  <td className="rp-muted">{formatInt(m.submitted)} URLs submitted{m.errors > 0 && m.warnings > 0 ? ` · ${formatInt(m.warnings)} warnings` : ""}</td>
                 </tr>
               ))}
             </tbody>
