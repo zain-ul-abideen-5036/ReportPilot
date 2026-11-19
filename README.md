@@ -7,249 +7,502 @@
 <h3>The monthly client report, written before you start work.</h3>
 
 <p>
-  <b>Every client gets a branded PDF on search, speed and uptime, with a plain-English summary<br />
-  of what changed and what to do next. ReportPilot drafts it; you read it, add a line, and approve.</b><br />
-  Runs on free tiers. Works without a single API key in demo mode.
+  <b>ReportPilot turns Search Console, page speed and uptime into a branded PDF every client can read.</b><br />
+  It collects the data, does the maths, writes a plain-English summary and drafts the report on the 3rd,<br />
+  then waits for an account manager to read it, add a line and approve. Free to run, no keys for the demo.
 </p>
 
 <p>
-  <a href="#quickstart"><b>Quickstart&nbsp;&rarr;</b></a>
+  <a href="docs/vercel-deployment.md"><b>Deploy to Vercel&nbsp;&rarr;</b></a>
   &nbsp;&nbsp;·&nbsp;&nbsp;
-  <a href="docs/SPEC.md"><b>Design specification</b></a>
+  <a href="TECHNICAL_README.md"><b>Technical Documentation</b></a>
   &nbsp;&nbsp;·&nbsp;&nbsp;
-  <a href="TECHNICAL_README.md">Technical documentation</a>
+  <a href="#quickstart">Quickstart</a>
   &nbsp;&nbsp;·&nbsp;&nbsp;
   <a href="#inside-the-app">Screenshots</a>
   &nbsp;&nbsp;·&nbsp;&nbsp;
-  <a href="#known-gaps">Known gaps</a>
-</p>
-
-<p>
-  <img alt="Tests" src="https://img.shields.io/badge/tests-93%20unit%20%2B%20end--to--end-2d7450?style=flat-square" />
-  <img alt="TypeScript" src="https://img.shields.io/badge/TypeScript-strict-1d4a3c?style=flat-square" />
-  <img alt="Next.js 15" src="https://img.shields.io/badge/Next.js-15-17201c?style=flat-square" />
-  <img alt="Running cost" src="https://img.shields.io/badge/running%20cost-%C2%A30-b4813f?style=flat-square" />
-  <img alt="Licence" src="https://img.shields.io/badge/licence-MIT-737a72?style=flat-square" />
+  <a href="#what-you-can-do">Features</a>
+  &nbsp;&nbsp;·&nbsp;&nbsp;
+  <a href="#built-with">Built with</a>
 </p>
 
 </div>
 
 <br />
 
-<img src="docs/screenshots/landing.png" alt="The ReportPilot landing page: the headline 'The monthly report, written before you start work' beside a fanned stack of real report pages, with floating cards showing organic clicks up 30.6% year on year and a report approved by Tom at 09:12" width="100%" />
+<img src="docs/screenshots/landing.png" alt="The ReportPilot landing page: the headline The monthly report, written before you start work, with the word written in a pine-to-brass gradient, two buttons, Open the demo and Read a sample report, and on the right a fanned stack of real report pages with floating cards showing organic clicks up 30.6% year on year and a report approved by Tom at 09:12" width="100%" />
 
 ---
 
 ## The problem it solves
 
-Web agencies spend **two to four hours per client, every month,** on reporting.
-Export Search Console. Run PageSpeed. Check uptime. Paste screenshots into
-slides. Write the commentary. Email it. Repeat for the next client. With 20
-clients that is 40 to 80 hours a month, and the figures drift depending on who
-pulled them.
+Agencies on monthly retainers spend **two to four hours per client, every
+month,** on reporting. Export Search Console. Run PageSpeed. Check uptime.
+Paste screenshots into slides. Write the commentary. Email it. Then do it again
+for the next client. With twenty clients that is 40 to 80 hours a month, the
+figures drift depending on who pulled them, and problems surface weeks after
+they happen.
 
-ReportPilot does that work overnight. On the 3rd of each month, once Google has
-finalised the previous month, it collects every client's data, calculates the
-changes, writes a plain-English summary, renders an eight-page branded PDF,
-and puts the draft in front of the account manager. **Reviewing and approving
-takes about ten minutes.** Nothing reaches a client until someone says so.
+ReportPilot does that work overnight. On the 3rd of each month, once Google
+has finalised the previous month, it collects every client's data, calculates
+what changed, ranks what matters, writes a summary in plain English and renders
+an eight-page PDF in the agency's own brand. **The account manager reads the
+draft, adds a note and approves it in about ten minutes.** Nothing reaches a
+client until someone says so.
 
-<table>
-  <tr>
-    <td width="50%" valign="top">
-      <b>Who it is for</b><br /><br />
-      Agencies and freelancers on monthly SEO or website-care retainers who
-      want to stop rebuilding the same report by hand, and want the report to
-      be <i>better</i> than the one they would have written.
-    </td>
-    <td width="50%" valign="top">
-      <b>What the client gets</b><br /><br />
-      A short email, the PDF attached, and a private link that works on a
-      phone. No account, no login, nothing to learn. Just what changed, why it
-      matters and what happens next.
-    </td>
-  </tr>
-</table>
+**Who it is for**
 
-### What makes it different
+- Web agencies and freelancers who send monthly SEO or website-care reports
+  and are tired of rebuilding them by hand
+- Account managers who want a draft they can trust, with the opportunities
+  already found
+- Business owners on the receiving end, who want to know what changed and what
+  happens next, not another dashboard login
+
+**What makes it different**
 
 | | |
 | --- | --- |
-| **Approval first** | Draft → In review → Approved → Sent. Every change is versioned and audit-logged. Auto-send is a per-client choice, not a default. |
-| **Honest numbers** | Every figure comes from one tested calculation library. If PageSpeed fails, the speed page says "unavailable this month"; it never shows zeros. |
-| **AI that can't misquote** | AI may polish the summary, but if its text contains any number that isn't in the source data, it is thrown away and the template is used. |
-| **Opportunities, not just charts** | Keywords one push from page one, pages that are seen but not clicked, and how many clicks fixing them is worth. |
-| **Alerts between reports** | Uptime every five minutes with a two-failure rule, SSL and domain expiry, traffic drops and Core Web Vitals regressions. |
-| **Your brand, never ours** | Colours, logo, sender and footer per agency. The PDF re-themes live in the branding studio. |
-| **£0 to run** | Cloudflare Workers for uptime, GitHub Actions for the monthly job, Postgres on a free tier. About 50 sites before anything costs money. |
-
----
-
-## Inside the app
-
-<img src="docs/screenshots/overview.png" alt="The overview: a greeting, the October cycle as one segmented bar from collecting to sent, a 'Needs you' list of reports and alerts, and 23 hours saved this cycle with a delivery chart" width="100%" />
-<p align="center"><sub><b>Overview.</b> Where the month's reports are, what is waiting on you, and the time it saved.</sub></p>
-
-<br />
-
-<img src="docs/screenshots/report-review.png" alt="Report review: the live A4 report on the left, and on the right the approval stepper, the findings, the account manager's note to the client, the auto-send switch and the Approve button" width="100%" />
-<p align="center"><sub><b>Report review.</b> The real PDF on the left, scaled. Findings, your note and the approve button on the right.</sub></p>
-
-<br />
-
-<img src="docs/screenshots/client-pdf.png" alt="Four pages of the client PDF side by side: the cover for Pennine Trail Outfitters, the executive summary with status lights and a scorecard, search performance with a daily clicks chart and tables, and page speed with Core Web Vitals trends" width="100%" />
-<p align="center"><sub><b>The client PDF.</b> Eight A4 pages, printed by a real Chromium from the same components as the preview.</sub></p>
-
-<br />
-
-<table>
-  <tr>
-    <td width="50%"><img src="docs/screenshots/branding.png" alt="Branding studio with six palettes and a live preview of the report cover" /></td>
-    <td width="50%"><img src="docs/screenshots/client.png" alt="Client page with KPIs, a 13-month clicks chart and real-visitor speed trends" /></td>
-  </tr>
-  <tr>
-    <td align="center"><sub><b>Branding studio.</b> Pick a palette and watch the report re-theme.</sub></td>
-    <td align="center"><sub><b>Client.</b> Thirteen months of search, speed and uptime at a glance.</sub></td>
-  </tr>
-  <tr>
-    <td width="50%"><img src="docs/screenshots/pipeline.png" alt="Pipeline page with an eight-stage matrix for every site and the failed collection error" /></td>
-    <td width="50%"><img src="docs/screenshots/alerts.png" alt="Alerts page listing an expiring SSL certificate, a downtime incident and a traffic drop" /></td>
-  </tr>
-  <tr>
-    <td align="center"><sub><b>Pipeline.</b> Every stage of every run, and exactly what failed.</sub></td>
-    <td align="center"><sub><b>Alerts.</b> Problems caught when they happen, not at month end.</sub></td>
-  </tr>
-</table>
-
-<br />
-
-<table>
-  <tr>
-    <td width="33%"><img src="docs/screenshots/mobile-landing.png" alt="Landing page on a phone" /></td>
-    <td width="33%"><img src="docs/screenshots/mobile-overview.png" alt="Overview on a phone" /></td>
-    <td width="33%"><img src="docs/screenshots/mobile-review.png" alt="Report review on a phone with Review and Preview tabs" /></td>
-  </tr>
-</table>
-<p align="center"><sub><b>On a phone.</b> Drawer navigation, cards instead of tables, and the review split into tabs. Tested at 360, 390, 768 and 1024 px for horizontal overflow.</sub></p>
+| **Approval before anything is sent** | Draft, in review, approved, sent. Every change is versioned and written to an audit log. Auto-send is a per-client choice, never the default. |
+| **Figures you can stand behind** | Every number comes from one tested calculation library, calculated the same way every month. Missing data is shown as missing, never as zero. |
+| **AI that cannot misquote a client** | AI may polish the summary, but if its text contains a single figure that is not in the source data, it is thrown away and the template is used. |
+| **Opportunities, not just charts** | Keywords one push from page one, pages that are seen but rarely clicked, and how many clicks fixing them is worth. |
+| **Free to run** | Cloudflare for uptime, GitHub Actions for the monthly job, Postgres on a free tier and Vercel for the dashboard. About fifty sites before anything costs money. |
 
 ---
 
 ## Quickstart
 
-**Requirements:** Node.js 22+. No database, accounts or API keys for the demo.
+**Requirements:** Node.js 22 or newer. No database, accounts or API keys for the demo.
 
 ```bash
 git clone https://github.com/zain-ul-abideen-5036/ReportPilot.git
 cd ReportPilot
 npm install
-npx playwright install chromium
+npx playwright install chromium   # for PDF downloads
 
-npm run dev        # the dashboard and landing page on http://localhost:3000 (Turbopack)
-npm run demo       # run the real monthly pipeline end to end: 8 PDFs in output/
-
-npm run build && npm start   # production build: what visitors actually get
+npm run dev                        # http://localhost:3000
 ```
 
-The demo is a fictional agency, Northfold Studio, with eight clients. Each one
-has a story: a dental practice growing steadily, an outdoor shop hit by an
-algorithm update, a vet with an SSL certificate about to expire, a heating
-engineer whose new chat widget slowed the site down.
+The app opens on a fictional agency, Northfold Studio, and its eight clients,
+each with a story to tell: a dental practice growing steadily, an outdoor shop
+hit by an algorithm update, a vet whose SSL certificate expires in five days, a
+heating engineer whose new chat widget slowed the site down.
 
-To connect real data, see [deployment](docs/deployment.md) and
+To run the real monthly pipeline end to end and get eight PDFs in `output/`:
+
+```bash
+npm run demo
+```
+
+To put it online, follow the [Vercel guide](docs/vercel-deployment.md): import
+the repository, set the root directory to `apps/web`, deploy. To connect real
+data, see [deployment](docs/deployment.md) and
 [connecting Search Console](docs/search-console-setup.md).
+
+---
+
+## Inside the app
+
+Real captures from the running application with the demo agency. Every figure
+is one the app calculated.
+
+### The overview: where the month stands
+
+The October cycle as one bar, from collecting to sent, the reports and alerts
+waiting on you, and the time the month saved.
+
+<img src="docs/screenshots/overview.png" alt="The overview: Good morning, Tom, four October reports waiting and five alerts open, the cycle as a segmented bar with counts for collecting, draft, in review, approved, sent and needs attention, a Needs you list of reports and alerts, and 23 hours saved this cycle with a delivery chart" width="100%" />
+
+### Review a report, then approve it
+
+The real PDF on the left, scaled to fit. On the right: the approval workflow,
+what the report says, your note to the client, auto-send and the Approve button.
+
+<img src="docs/screenshots/report-review.png" alt="Report review for Harlow and Finch Dental: the A4 report preview on the left, and on the right a four-step workflow from draft to sent, six findings, a note to the client, the recipient, an auto-send switch and the Approve report button" width="100%" />
+
+### A PDF made for the client, not printed from a dashboard
+
+Eight A4 pages, rendered by a real Chromium from the same components as the
+preview, in the agency's colours.
+
+<table>
+<tr>
+<td width="25%"><img src="docs/screenshots/pdf-cover.png" alt="PDF page 1: the cover for Pennine Trail Outfitters, October 2026, prepared by Priya Lal" width="100%" /></td>
+<td width="25%"><img src="docs/screenshots/pdf-summary.png" alt="PDF page 2: the executive summary with three status lights, five highlights and a scorecard of clicks, impressions, click-through rate and average position with sparklines" width="100%" /></td>
+<td width="25%"><img src="docs/screenshots/pdf-opportunities.png" alt="PDF page 4: opportunities, a table of keywords ranking 8 to 20, keywords that dropped off page one and indexing health for key pages" width="100%" /></td>
+<td width="25%"><img src="docs/screenshots/pdf-speed.png" alt="PDF page 5: page speed, with real-visitor LCP, INP and CLS, 25-week trends, lab scores and the top speed opportunities" width="100%" /></td>
+</tr>
+<tr>
+<td align="center"><b>Cover</b></td>
+<td align="center"><b>Summary</b>: status lights, highlights, scorecard</td>
+<td align="center"><b>Opportunities</b>: where the next clicks come from</td>
+<td align="center"><b>Speed</b>: what real visitors experience</td>
+</tr>
+</table>
+
+### Clients, branding and the pipeline
+
+<table>
+<tr>
+<td width="50%"><img src="docs/screenshots/client.png" alt="The client page for Pennine Trail Outfitters with four KPIs, a 13-month organic clicks chart and real-visitor speed trends" width="100%" /></td>
+<td width="50%"><img src="docs/screenshots/branding.png" alt="The branding studio with six palettes, colour fields, agency name and footer, and a live preview of the report cover" width="100%" /></td>
+</tr>
+<tr>
+<td align="center"><b>Client</b>: thirteen months of search, speed and uptime</td>
+<td align="center"><b>Branding</b>: pick a palette and watch the report re-theme</td>
+</tr>
+<tr>
+<td width="50%"><img src="docs/screenshots/pipeline.png" alt="The pipeline page with an eight-stage matrix for every site and the error for a failed collection" width="100%" /></td>
+<td width="50%"><img src="docs/screenshots/alerts.png" alt="The alerts page with an expiring SSL certificate, a downtime incident and a traffic drop, each with acknowledge and resolve actions" width="100%" /></td>
+</tr>
+<tr>
+<td align="center"><b>Pipeline</b>: every stage of every run, and what failed</td>
+<td align="center"><b>Alerts</b>: problems caught when they happen</td>
+</tr>
+</table>
+
+### Adding a client takes five minutes
+
+<img src="docs/screenshots/onboarding.png" alt="The Add a client wizard on step one of four, Client, Site, Search Console and First report, asking for the business name, contact and time zone" width="100%" />
+
+---
+
+### One light theme, designed rather than defaulted
+
+"Paper & Pine": a warm paper ground, deep pine flowing into brass in the
+signature gradient, Fraunces for headings and Hanken Grotesk for the
+interface. Motion is used where it carries meaning, and every animation stops
+when a visitor turns animations off.
+
+<img src="docs/screenshots/section-the-report.png" alt="The landing page section The report: Eight pages a business owner will actually read, a numbered list of report sections beside a photograph of a laptop showing charts next to a coffee cup, with a report cover laid over it" width="100%" />
+
+### Built for every screen, tested on twelve
+
+The hero fits on one screen from a 1280 × 720 laptop to a 2560 px ultrawide.
+Tables become cards on phones, the report review splits into tabs, and an
+automated test fails if any page scrolls sideways or a hero button falls below
+the fold.
+
+<table>
+<tr>
+<td width="50%"><img src="docs/screenshots/laptop-landing.png" alt="The landing page on a 1280 by 720 laptop with the whole hero visible" width="100%" /></td>
+<td width="50%"><img src="docs/screenshots/tablet-overview.png" alt="The overview on a tablet with the menu button in the top bar" width="100%" /></td>
+</tr>
+<tr>
+<td align="center"><b>HD laptop</b>, 1280 × 720</td>
+<td align="center"><b>Tablet</b>, 768 × 1024</td>
+</tr>
+</table>
+
+<table>
+<tr>
+<td width="33%"><img src="docs/screenshots/mobile-landing.png" alt="The landing page on a phone with stacked full-width buttons" width="100%" /></td>
+<td width="33%"><img src="docs/screenshots/mobile-overview.png" alt="The overview on a phone" width="100%" /></td>
+<td width="33%"><img src="docs/screenshots/mobile-review.png" alt="The report review on a phone with Review and Preview tabs" width="100%" /></td>
+</tr>
+</table>
+
+---
+
+## What you can do
+
+<table>
+<tr>
+<td width="33%" valign="top">
+
+**Report on search**
+
+Clicks, impressions, CTR and average position with month-on-month and
+year-on-year change and 13-month trends, top queries and pages, biggest
+movers, devices and branded versus non-branded traffic.
+
+</td>
+<td width="33%" valign="top">
+
+**Find the opportunities**
+
+Keywords at positions 8 to 20 with real demand, pages that Google shows often
+but people rarely click, with the clicks fixing them is worth, and keywords
+that moved on or off page one.
+
+</td>
+<td width="33%" valign="top">
+
+**Measure real speed**
+
+Core Web Vitals from real Chrome users with 25-week trends, and Lighthouse lab
+scores as the median of three runs, for the homepage and up to five key pages.
+
+</td>
+</tr>
+<tr>
+<td width="33%" valign="top">
+
+**Watch uptime between reports**
+
+Checks every five minutes that require the page's own text, not just a 200; an
+incident opens only after two failures 30 seconds apart. SSL and domain expiry
+too.
+
+</td>
+<td width="33%" valign="top">
+
+**Review, note and approve**
+
+Read the draft as the client will see it, add a personal note, approve or turn
+on auto-send per client. Every step is versioned and logged.
+
+</td>
+<td width="33%" valign="top">
+
+**Send it in your brand**
+
+Your colours, name, sender address and footer on every page and email. The
+client gets the PDF and a private link that works on a phone, valid for 90 days.
+
+</td>
+</tr>
+</table>
 
 ---
 
 ## How it works
 
-```mermaid
-flowchart LR
-    subgraph Every five minutes
-      W[Uptime Worker<br/>Cloudflare cron] -->|checks, incidents| DB
-    end
-    subgraph Every Monday
-      S[Snapshot job<br/>PageSpeed median of 3 · CrUX · URL Inspection · expiry] --> DB
-    end
-    subgraph 2nd–4th of each month
-      P[Pipeline<br/>GitHub Actions] --> C1[Collect] --> C2[Calculate] --> C3[Insights] --> C4[Narrative] --> C5[Render PDF]
-    end
-    DB[(Postgres)] <--> P
-    C5 --> R{Review in dashboard}
-    R -->|approved| E[Email + PDF + private link]
-```
+<img src="docs/screenshots/section-how-it-works.png" alt="Six stages, all of them unattended but one. On the 3rd of each month, once Google marks the previous month final, a scheduled job works through every site. Collect: Search Console, PageSpeed, CrUX, uptime. Calculate: changes, opportunities, vitals. Write: rules, templates, checked AI. Render: branded A4 PDF. Review: you add a note, approve. Send: email, PDF, private link. Every stage saves its work, so a failed run picks up where it stopped." width="100%" />
 
-Every stage writes its result to the database, so a failed run resumes where
-it stopped, and a report is keyed on site and month, so re-running never sends
-twice. The [specification](docs/SPEC.md) and the
-[architecture decisions](docs/adr/README.md) explain the reasoning.
+Uptime runs on Cloudflare Workers every five minutes, a snapshot job collects
+speed and indexing every Monday, and the monthly pipeline runs on GitHub
+Actions on the 2nd, 3rd and 4th. Each report is keyed on site and month, so
+re-running never duplicates and never sends twice. The architecture and every
+stage are described in the [technical documentation](TECHNICAL_README.md#architecture).
+
+---
+
+## The part that matters
+
+A report is only useful if the client understands it. So the product is built
+around the step most reporting tools leave out: **turning figures into
+sentences a business owner can act on.**
+
+Every finding is written for the person paying for the work, and carries the
+next step. Here is real output for the demo vet practice:
+
+> **SSL certificate expires in 5 days** · Critical · Reliability
+>
+> The SSL certificate expires in 5 days. If it lapses, browsers will show
+> visitors a security warning.
+>
+> **Next step:** Confirm automatic certificate renewal is working, or renew it
+> manually.
+
+> **1 key page not indexed** · Critical · Indexing
+>
+> 1 key page is not in Google's index. /emergency-vet/ reports "Crawled -
+> currently not indexed".
+>
+> **Next step:** Fix the cause on /emergency-vet/ and request indexing in Search
+> Console.
+
+And for the dental practice, a quieter month:
+
+> October 2026 was a steady month for harlowfinch-dental.test. Search, speed
+> and reliability are on track.
+>
+> 10 search terms rank between positions 8 and 20 with 29,822 impressions
+> between them. The biggest is "dentist leeds" at position 15.9.
+
+Findings are ranked by severity, and the summary always gives each area a
+voice, so a month with good search figures but an hour of downtime is never
+described as simply a good month.
+
+### The number check
+
+AI is allowed to make that text read more naturally, and nothing more. Its
+rewrite is compared with the source figures: if it rounds 18.3% to "about
+18%", invents a figure, or drops most of the numbers, the rewrite is discarded
+and the template is used. Only aggregated metrics are ever sent to the model,
+never client contact details, and AI can be switched off for any client.
 
 ---
 
 ## Built with
 
+<div align="center">
+
+<h4>Application</h4>
+
+<table>
+<tr>
+<td align="center" width="118"><img src="https://cdn.simpleicons.org/nextdotjs/000000/ffffff" width="42" height="42" alt="Next.js" /><br /><sub><b>Next.js</b><br />15, App Router</sub></td>
+<td align="center" width="118"><img src="https://cdn.simpleicons.org/react/61DAFB/61DAFB" width="42" height="42" alt="React" /><br /><sub><b>React</b><br />19</sub></td>
+<td align="center" width="118"><img src="https://cdn.simpleicons.org/typescript/3178C6/3178C6" width="42" height="42" alt="TypeScript" /><br /><sub><b>TypeScript</b><br />strict</sub></td>
+<td align="center" width="118"><img src="https://cdn.simpleicons.org/tailwindcss/06B6D4/06B6D4" width="42" height="42" alt="Tailwind CSS" /><br /><sub><b>Tailwind CSS</b><br />v4 tokens</sub></td>
+<td align="center" width="118"><img src="https://cdn.simpleicons.org/phosphoricons/3C402B/E9E9E1" width="42" height="42" alt="Phosphor Icons" /><br /><sub><b>Phosphor</b><br />icons</sub></td>
+</tr>
+</table>
+
+<h4>Data and integrations</h4>
+
+<table>
+<tr>
+<td align="center" width="118"><img src="https://cdn.simpleicons.org/postgresql/4169E1/4169E1" width="42" height="42" alt="PostgreSQL" /><br /><sub><b>PostgreSQL</b><br />Neon or Supabase</sub></td>
+<td align="center" width="118"><img src="https://cdn.simpleicons.org/drizzle/C5F74F/C5F74F" width="42" height="42" alt="Drizzle ORM" /><br /><sub><b>Drizzle</b><br />ORM</sub></td>
+<td align="center" width="118"><img src="https://cdn.simpleicons.org/googlesearchconsole/458CF5/458CF5" width="42" height="42" alt="Google Search Console" /><br /><sub><b>Search Console</b><br />service account</sub></td>
+<td align="center" width="118"><img src="https://cdn.simpleicons.org/googlechrome/4285F4/4285F4" width="42" height="42" alt="Chrome UX Report" /><br /><sub><b>PageSpeed + CrUX</b><br />free API</sub></td>
+</tr>
+</table>
+
+<h4>Runtimes and delivery</h4>
+
+<table>
+<tr>
+<td align="center" width="118"><img src="https://cdn.simpleicons.org/vercel/000000/ffffff" width="42" height="42" alt="Vercel" /><br /><sub><b>Vercel</b><br />dashboard</sub></td>
+<td align="center" width="118"><img src="https://cdn.simpleicons.org/cloudflareworkers/F38020/F38020" width="42" height="42" alt="Cloudflare Workers" /><br /><sub><b>Workers</b><br />uptime cron</sub></td>
+<td align="center" width="118"><img src="https://cdn.simpleicons.org/githubactions/2088FF/2088FF" width="42" height="42" alt="GitHub Actions" /><br /><sub><b>GitHub Actions</b><br />monthly job, CI</sub></td>
+<td align="center" width="118"><img src="https://cdn.simpleicons.org/cloudflare/F38020/F38020" width="42" height="42" alt="Cloudflare R2" /><br /><sub><b>R2</b><br />PDF storage</sub></td>
+<td align="center" width="118"><img src="https://cdn.simpleicons.org/resend/000000/ffffff" width="42" height="42" alt="Resend" /><br /><sub><b>Resend</b><br />email</sub></td>
+</tr>
+</table>
+
+<h4>Quality</h4>
+
+<table>
+<tr>
+<td align="center" width="118"><img src="https://cdn.simpleicons.org/vitest/6E9F18/6E9F18" width="42" height="42" alt="Vitest" /><br /><sub><b>Vitest</b><br />93 tests</sub></td>
+<td align="center" width="118"><img src="https://cdn.simpleicons.org/nodedotjs/5FA04E/5FA04E" width="42" height="42" alt="Node.js" /><br /><sub><b>Node.js</b><br />22</sub></td>
+<td align="center" width="118"><img src="https://cdn.simpleicons.org/sentry/362D59/ffffff" width="42" height="42" alt="Sentry" /><br /><sub><b>Sentry</b><br />errors</sub></td>
+</tr>
+</table>
+
+</div>
+
+Also in use, and carrying a good deal of the weight, but without a brand mark
+of their own: **Playwright** prints the PDF in a real Chromium and runs the
+end-to-end and visual tests; **@sparticuz/chromium** provides Chromium inside
+Vercel Functions; **postgres.js** connects to the database; **aws4fetch** signs
+R2 uploads; **Healthchecks.io** watches the monthly job; and the charts are
+hand-written SVG. Type is set in **Fraunces**, **Hanken Grotesk** and
+**Geist Mono**.
+
+The full breakdown, with the role each one plays, is in the
+[technical documentation](TECHNICAL_README.md#architecture).
+
+---
+
+## Where it is useful
+
+- **Monthly retainer reporting.** The job it was built for: one report per
+  client per month, drafted overnight, approved in minutes.
+- **Catching problems early.** Downtime, expiring certificates and domains,
+  traffic drops and speed regressions raise alerts the day they happen, not at
+  month end.
+- **Showing the value of SEO work.** Year-on-year trends, branded versus
+  non-branded traffic and the opportunities list make the work visible.
+- **White-label agencies.** Every page and email carries the agency's own
+  brand; the client never sees ReportPilot.
+- **As a reference implementation.** A TypeScript monorepo that spans
+  Next.js, a Cloudflare Worker, scheduled GitHub Actions, Google APIs with a
+  service account and serverless PDF rendering, with a test at every layer.
+
+ReportPilot reports what Google's APIs and its own checks can measure. It does
+not cover paid search, Bing or analytics yet, and Search Console data is two to
+three days behind by design.
+
+---
+
+## Project highlights
+
 | | |
 | --- | --- |
-| **Dashboard** | Next.js 15, React 19, Tailwind CSS v4, Phosphor icons, Fraunces and Hanken Grotesk |
-| **Report** | React components with print geometry, hand-written SVG charts, Playwright `page.pdf()` |
-| **Data** | Postgres with Drizzle ORM; Search Console, PageSpeed Insights, CrUX History, RDAP |
-| **Runtimes** | Cloudflare Workers (uptime), GitHub Actions (jobs), any Node host (dashboard) |
-| **Delivery** | Resend email, Cloudflare R2 storage, Healthchecks.io heartbeat |
-| **Quality** | Vitest (93 tests), Playwright end-to-end and PDF visual regression, gitleaks, Dependabot |
-
-```
-apps/web               dashboard and landing page
-packages/core          calculations, insights, narrative and the number check
-packages/report        the A4 report, shared by preview and PDF
-packages/charts        SVG charts
-packages/integrations  Google APIs, RDAP, TLS
-packages/db            schema, migrations, seed
-packages/demo          the sample agency
-workers/uptime         Cloudflare Worker
-jobs/pipeline          monthly and weekly jobs
-```
+| **One renderer, two outputs** | The dashboard preview and the client PDF are the same React components, so what is approved is pixel-for-pixel what is sent. |
+| **A pipeline that can fail safely** | Each report is keyed on site and month and every stage saves its output, so a crashed run resumes where it stopped and a re-run never emails twice. Both are unit tests. |
+| **Honest about missing data** | Each source is collected independently; if PageSpeed hits its quota, the speed page says so and the rest of the report is unaffected. |
+| **A number check on AI** | The model may rephrase, never restate: any figure in its text that is not in the data and the template wins. |
+| **Service-account access** | Read-only Search Console access without an OAuth consent screen or Google's app verification, revocable by the client at any time. |
+| **Serverless PDFs that actually work** | `@sparticuz/chromium` with `playwright-core` pinned to the matching Chromium, its browser files shipped explicitly, and a CI smoke test that prints a PDF through that path on Linux. |
+| **Responsive by test, not by eye** | Playwright checks the hero is above the fold on seven screen sizes and that no page scrolls sideways at four widths, on desktop and mobile. |
 
 ---
 
 ## Documentation
 
-| Document | For |
+Complete engineering detail, from setup and environment variables to
+architecture, the pipeline and deployment, lives in one place:
+
+<div align="center">
+
+### [Technical Documentation &rarr;](TECHNICAL_README.md)
+
+</div>
+
+| Looking for | Go to |
 | --- | --- |
-| [Design specification](docs/SPEC.md) | The full design: problem, scope, architecture, data model, pipeline, security |
-| [Technical documentation](TECHNICAL_README.md) | How the code fits together, and how to work on it |
-| [Architecture decisions](docs/adr/README.md) | Why it is built this way, and what each choice costs |
-| [Deployment](docs/deployment.md) | Going live on free tiers |
-| [Search Console setup](docs/search-console-setup.md) | Connecting clients with a service account |
-| [Runbook](docs/runbook.md) | What to do when something fails |
-| [Privacy](docs/privacy.md) | What is stored, for how long, and who can see it |
-| [Design system](docs/design.md) | Type, colour, motion and layout |
+| Running it locally | [Getting started](TECHNICAL_README.md#getting-started) |
+| Every environment variable | [Environment variables](TECHNICAL_README.md#environment-variables) |
+| Putting it online | [Deploying to Vercel](docs/vercel-deployment.md) |
+| Database, jobs and the uptime worker | [Deployment](docs/deployment.md) |
+| Connecting a client's Search Console | [Search Console setup](docs/search-console-setup.md) |
+| How the pieces fit together | [Architecture](TECHNICAL_README.md#architecture) |
+| What each pipeline stage does | [The monthly pipeline](TECHNICAL_README.md#the-monthly-pipeline) |
+| How every figure is calculated | [How figures are calculated](TECHNICAL_README.md#how-figures-are-calculated) |
+| Why it is built this way | [Design specification](docs/SPEC.md) · [Architecture decisions](docs/adr/README.md) |
+| When something fails | [Runbook](docs/runbook.md) |
+| What is stored and for how long | [Privacy](docs/privacy.md) |
+| Type, colour and motion | [Design system](docs/design.md) |
+| Contributing | [Contributing guide](CONTRIBUTING.md) |
 
 ---
 
-## Known gaps
+## Project status
 
-This is an MVP, and the README says so.
+Ready to deploy to Vercel with no configuration, and runnable on any machine
+with Node.js. Continuous integration runs typecheck, 93 unit and contract
+tests, the production build, Playwright end-to-end and PDF visual tests, the
+serverless PDF smoke test and a secret scan on every push.
+
+- Complete monthly loop: collection, calculation, insights, narrative with the
+  number check, PDF rendering, approval and delivery
+- Dashboard, landing page, client web report, branding studio and onboarding
+  wizard, responsive from 360 px
+- Uptime worker with the two-failure rule, alerts and nightly rollup
+- Database schema for every table in the specification, with a generated
+  migration, demo seed and optional row-level security
+
+Known gaps, stated plainly:
 
 - **Dashboard actions are not persisted yet.** Approve, notes, alert
   acknowledgement and branding work in the interface but update local state in
-  demo mode; the database layer and pipeline already support them, the server
-  actions connecting the two are next.
-- **No authentication provider is wired up.** The schema has users, roles and
-  memberships, and optional row-level security policies, but sign-in is not
-  implemented.
+  demo mode; the database layer and pipeline already support them, and the
+  server actions connecting the two are next.
+- **No sign-in yet.** Users, roles and memberships are in the schema, but no
+  authentication provider is wired up.
 - **GA4 is not integrated.** Search Console covers organic Google search only.
-- **Uptime runs from one region.**
+- **Uptime runs from one region.** Cloudflare's network is reliable, but this
+  is not multi-region monitoring.
 - **Bounce handling** is designed (contacts are flagged) but the Resend
   webhook endpoint is not built.
 
 ---
 
-## Credits
+<div align="center">
 
-Photography on the landing page is CC0 from StockSnap via
-[Openverse](https://openverse.org); see
-[credits](apps/web/public/images/CREDITS.md). The demo agency and its clients
-are fictional.
+<img src="docs/brand/mark.svg" alt="" width="40" height="40" />
 
-## Licence
+**ReportPilot**: the monthly client report, written before you start work
 
-[MIT](LICENSE) © Zain Ul Abideen
+[Technical Documentation](TECHNICAL_README.md)
+&nbsp;·&nbsp;
+[Deploy to Vercel](docs/vercel-deployment.md)
+&nbsp;·&nbsp;
+[MIT Licence](LICENSE)
+
+<br />
+
+<sub><i>Photography CC0 via <a href="apps/web/public/images/CREDITS.md">Openverse</a>. The demo agency and its clients are fictional.</i></sub>
+
+<br />
+
+<sub><i>A report is only finished when the client knows what happens next.</i></sub>
+
+</div>
