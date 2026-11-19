@@ -1,14 +1,13 @@
 import Link from "next/link";
 import { ArrowRight, Bell } from "@phosphor-icons/react/dist/ssr";
-import type { SiteRow } from "@/lib/data";
+import type { AlertRow, SiteRow } from "@/lib/data";
 import { Monogram } from "@/components/ui/Monogram";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 import { timeAgo } from "@/lib/time";
-import type { DemoAlert } from "@reportpilot/demo";
 
 export type QueueItem =
   | { kind: "report"; row: SiteRow }
-  | { kind: "alert"; alert: DemoAlert; row: SiteRow };
+  | { kind: "alert"; alert: AlertRow; row: SiteRow };
 
 /**
  * Everything waiting on the signed-in person, newest pressure first.

@@ -9,7 +9,7 @@ import { Queue, type QueueItem } from "@/components/dashboard/Queue";
 import { TimeSaved } from "@/components/dashboard/TimeSaved";
 import { PortfolioTable } from "@/components/dashboard/PortfolioTable";
 import { ActivityFeed } from "@/components/dashboard/ActivityFeed";
-import { currentUser, deliveryHistory, listAlerts, listAudit, listSites, now, period, statusCounts } from "@/lib/data";
+import { getWorkspace, statusCounts } from "@/lib/data";
 
 export const metadata: Metadata = { title: "Overview" };
 
@@ -18,18 +18,21 @@ function greeting(d: Date) {
   return h < 12 ? "Good morning" : h < 18 ? "Good afternoon" : "Good evening";
 }
 
-export default function OverviewPage() {
-  const rows = listSites();
-  const counts = statusCounts();
-  const alerts = listAlerts().filter((a) => a.state === "open");
+export default async function OverviewPage() {
+  const ws = await getWorkspace();
+  const { period, now } = ws;
+  const rows = ws.sites;
+  const counts = statusCounts(ws);
+  const rowOf = (siteId: string) => rows.find((r) => r.site.id === siteId)!;
+  const alerts = ws.alerts.filter((a) => a.state === "open" && rows.some((r) => r.site.id === a.siteId));
   const waiting = rows.filter((r) => r.status === "in_review" || r.status === "draft" || r.status === "failed");
 
   const queue: QueueItem[] = [
     ...rows.filter((r) => r.status === "failed").map((row) => ({ kind: "report" as const, row })),
-    ...alerts.filter((a) => a.severity === "critical").map((a) => ({ kind: "alert" as const, alert: a, row: a.row })),
+    ...alerts.filter((a) => a.severity === "critical").map((a) => ({ kind: "alert" as const, alert: a, row: rowOf(a.siteId) })),
     ...rows.filter((r) => r.status === "in_review").map((row) => ({ kind: "report" as const, row })),
     ...rows.filter((r) => r.status === "draft").map((row) => ({ kind: "report" as const, row })),
-    ...alerts.filter((a) => a.severity === "warning").slice(0, 2).map((a) => ({ kind: "alert" as const, alert: a, row: a.row })),
+    ...alerts.filter((a) => a.severity === "warning").slice(0, 2).map((a) => ({ kind: "alert" as const, alert: a, row: rowOf(a.siteId) })),
   ];
 
   const date = now.toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long", timeZone: "Europe/London" });
@@ -41,7 +44,7 @@ export default function OverviewPage() {
         <PageHeader
           className="glow glow-soft"
           eyebrow={date}
-          title={<>{greeting(now)}, {currentUser.name.split(" ")[0]}.</>}
+          title={<>{greeting(now)}, {ws.user.name.split(" ")[0]}.</>}
           description={
             <>
               {waiting.length} {formatPeriod(period)} reports are waiting on you, and {alerts.length} alerts are open.
@@ -51,7 +54,7 @@ export default function OverviewPage() {
           actions={
             <>
               <ButtonLink href="/clients/new" variant="secondary"><Plus size={15} aria-hidden />Add client</ButtonLink>
-              <ButtonLink href={`/reports/${waiting[0]?.site.id ?? ""}`} variant="primary">
+              <ButtonLink href={waiting[0] ? `/reports/${waiting[0].site.id}` : "/reports"} variant="primary">
                 Start reviewing<ArrowRight size={15} aria-hidden />
               </ButtonLink>
             </>
@@ -66,7 +69,7 @@ export default function OverviewPage() {
             <Queue items={queue} />
           </section>
           <aside className="animate-enter [animation-delay:120ms]">
-            <TimeSaved history={deliveryHistory} sites={rows.length} />
+            <TimeSaved history={ws.deliveryHistory} sites={rows.length} />
           </aside>
         </div>
 
@@ -82,7 +85,7 @@ export default function OverviewPage() {
 
         <section aria-labelledby="activity-heading" className="mt-14 max-w-xl">
           <SectionHeading id="activity-heading" title="Recent activity" />
-          <ActivityFeed entries={listAudit().slice(0, 6)} />
+          <ActivityFeed entries={ws.audit.slice(0, 6)} />
         </section>
       </div>
     </>

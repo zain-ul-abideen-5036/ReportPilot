@@ -12,7 +12,17 @@ interface Props {
  */
 export function TimeSaved({ history, sites }: Props) {
   const manualHours = 3;
-  const last = history[history.length - 1]!;
+  const last = history[history.length - 1];
+  if (!last) {
+    return (
+      <div>
+        <p className="text-small text-ink-3">Time saved this cycle</p>
+        <p className="mt-2 max-w-[34ch] text-small text-ink-2">
+          The first full cycle has not finished yet. Once reports go out, this shows review minutes against about {manualHours} hours per client by hand.
+        </p>
+      </div>
+    );
+  }
   const savedHours = Math.round(sites * manualHours - (sites * last.manualMinutes) / 60);
   const max = Math.max(...history.map((h) => h.onTime + h.late));
   return (

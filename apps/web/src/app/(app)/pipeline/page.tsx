@@ -1,12 +1,12 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ArrowClockwise, CheckCircle, CircleNotch, Clock, Heartbeat, Pulse, WarningOctagon, CalendarCheck } from "@phosphor-icons/react/dist/ssr";
+import { ArrowClockwise, Bell, CheckCircle, CircleNotch, Clock, Heartbeat, Pulse, WarningOctagon, CalendarCheck } from "@phosphor-icons/react/dist/ssr";
 import { STAGES, type Stage } from "@reportpilot/demo";
 import { formatPeriod } from "@reportpilot/core";
 import { Topbar } from "@/components/shell/Topbar";
 import { PageHeader, SectionHeading } from "@/components/ui/PageHeader";
 import { Monogram } from "@/components/ui/Monogram";
-import { listRuns, period } from "@/lib/data";
+import { getWorkspace } from "@/lib/data";
 import { cn } from "@/lib/cn";
 
 export const metadata: Metadata = { title: "Pipeline" };
@@ -41,11 +41,14 @@ const CELL: Record<Cell, { cls: string; label: string }> = {
 const JOBS = [
   { icon: Pulse, name: "Uptime checks", where: "Cloudflare Workers cron", schedule: "Every 5 minutes", last: "3 min ago", detail: "2,304 checks today, 0 failures in the last hour" },
   { icon: CalendarCheck, name: "Weekly snapshot", where: "GitHub Actions", schedule: "Mondays 05:00", last: "3 days ago", detail: "PageSpeed median of 3, CrUX history, sitemaps, URL Inspection" },
-  { icon: ArrowClockwise, name: "Monthly reports", where: "GitHub Actions + Playwright", schedule: "3rd of the month, 06:00", last: "16 days ago", detail: "Next run 3 Dec. Retries daily until Search Console marks the month final" },
+  { icon: ArrowClockwise, name: "Monthly reports", where: "GitHub Actions + Playwright", schedule: "Each client's report day, 06:00 local", last: "16 days ago", detail: "Hourly from the 1st to the 8th; each site runs once its client's report day reaches 06:00 in their time zone" },
+  { icon: Bell, name: "Daily alerts", where: "GitHub Actions", schedule: "Daily 05:30", last: "4 h ago", detail: "Owed 16-month backfills, fresh daily clicks, SSL, domain, traffic, vitals and indexing alerts" },
 ];
 
-export default function PipelinePage() {
-  const runs = listRuns();
+export default async function PipelinePage() {
+  const ws = await getWorkspace();
+  const { period } = ws;
+  const runs = ws.runs;
   const failed = runs.filter((r) => r.status === "failed");
   return (
     <>
@@ -77,8 +80,8 @@ export default function PipelinePage() {
                   <tr key={r.id}>
                     <td className="py-3 pr-3 pl-5">
                       <Link href={`/reports/${r.siteId}`} className="flex items-center gap-2.5 hover:text-accent">
-                        <Monogram name={r.row.client.name} initials={r.row.client.initials} size="sm" />
-                        <span className="truncate font-medium text-ink">{r.row.client.name}</span>
+                        <Monogram name={r.clientName} initials={r.clientInitials} size="sm" />
+                        <span className="truncate font-medium text-ink">{r.clientName}</span>
                       </Link>
                     </td>
                     {cells(r.stage, r.status).map((c, i) => (
@@ -112,7 +115,7 @@ export default function PipelinePage() {
             <SectionHeading id="errors-heading" title="Errors" meta="after three attempts with exponential backoff" />
             {failed.map((r) => (
               <div key={r.id} className="rounded-lg bg-act-soft/60 p-4">
-                <p className="text-small font-medium text-act">{r.row.client.name} · {STAGE_LABEL[r.stage]}</p>
+                <p className="text-small font-medium text-act">{r.clientName} · {STAGE_LABEL[r.stage]}</p>
                 <p className="mt-1 font-mono text-[12px] leading-5 break-words text-ink-2">{r.error}</p>
               </div>
             ))}
