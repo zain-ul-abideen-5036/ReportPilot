@@ -10,7 +10,7 @@ import { StatusBadge } from "@/components/ui/StatusBadge";
 import { StatusLight } from "@/components/ui/StatusLight";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { ButtonLink } from "@/components/ui/Button";
-import { STATUS_ORDER, listSites, period, statusCounts } from "@/lib/data";
+import { STATUS_ORDER, getWorkspace, statusCounts } from "@/lib/data";
 import { STATUS_HINT, STATUS_LABEL } from "@/lib/status";
 import { cn } from "@/lib/cn";
 
@@ -21,8 +21,10 @@ const GROUP_ORDER: ReportStatus[] = ["failed", "in_review", "draft", "collecting
 export default async function ReportsPage({ searchParams }: { searchParams: Promise<{ status?: string }> }) {
   const { status } = await searchParams;
   const filter = STATUS_ORDER.includes(status as ReportStatus) ? (status as ReportStatus) : null;
-  const rows = listSites();
-  const counts = statusCounts();
+  const ws = await getWorkspace();
+  const { period } = ws;
+  const rows = ws.sites;
+  const counts = statusCounts(ws);
   const groups = GROUP_ORDER.filter((s) => !filter || s === filter)
     .map((s) => ({ status: s, rows: rows.filter((r) => r.status === s) }))
     .filter((g) => g.rows.length > 0);

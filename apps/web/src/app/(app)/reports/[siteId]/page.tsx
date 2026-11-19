@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { notFound } from "next/navigation";
 import { formatPeriod, prettyUrl } from "@reportpilot/core";
 import { ReportDocument, PAGE_COUNT } from "@reportpilot/report";
 import { Topbar } from "@/components/shell/Topbar";
@@ -9,30 +8,25 @@ import { StatusBadge } from "@/components/ui/StatusBadge";
 import { ScaledDocument } from "@/components/review/ScaledDocument";
 import { ReviewPanel } from "@/components/review/ReviewPanel";
 import { ReviewLayout } from "@/components/review/ReviewLayout";
-import { getSite, listSites, now, org, period, shareToken } from "@/lib/data";
+import { findSite, getWorkspace } from "@/lib/data";
 import { timeAgo } from "@/lib/time";
 
-export function generateStaticParams() {
-  return listSites().map((r) => ({ siteId: r.site.id }));
-}
-
 export async function generateMetadata({ params }: { params: Promise<{ siteId: string }> }): Promise<Metadata> {
-  const row = getSite((await params).siteId);
-  return { title: row ? `${row.client.name} · ${formatPeriod(period)}` : "Report" };
+  const ws = await getWorkspace();
+  const { siteId } = await params;
+  const row = ws.sites.find((r) => r.site.id === siteId);
+  return { title: row ? `${row.client.name} · ${formatPeriod(ws.period)}` : "Report" };
 }
 
-const SAMPLE_NOTES: Record<string, string> = {
-  site_harlow: "October was about the implants page. We rewrote it in September and it is now the second-biggest source of new patient enquiries.\n\nIn November we will tackle the titles on the treatment pages, which Google shows often but which few people click.",
-  site_pennine: "The drop in clicks lines up with Google's core update in the second week of October, which hit category pages across outdoor retail. Competitors saw the same pattern. We are reviewing the walking boots collection first.",
-};
+const FAILURE_NOTE = "PageSpeed collection failed after three attempts. You can approve with the speed section marked unavailable, or wait for the next retry.";
 
 const SECTIONS = ["Cover", "Summary", "Search", "Opportunities", "Speed", "Uptime", "Next steps", "Appendix"];
 const GAP = 28;
 
 export default async function ReviewPage({ params }: { params: Promise<{ siteId: string }> }) {
-  const row = getSite((await params).siteId);
-  if (!row) notFound();
-  const notes = SAMPLE_NOTES[row.site.id] ?? "";
+  const ws = await getWorkspace();
+  const { period, org } = ws;
+  const row = findSite(ws, (await params).siteId);
 
   return (
     <>
@@ -44,7 +38,7 @@ export default async function ReviewPage({ params }: { params: Promise<{ siteId:
               <Monogram name={row.client.name} initials={row.client.initials} size="sm" />
               <span>{prettyUrl(row.site.url)}</span>
               <span className="text-ink-4">·</span>
-              <span>Generated {timeAgo(new Date(now.getTime() - 16 * 86_400_000).toISOString())}</span>
+              <span>Generated {timeAgo(row.generatedAt)}</span>
             </span>
           }
           title={<>{row.client.name}, <em className="text-ink-3">{formatPeriod(period)}</em></>}
@@ -67,27 +61,34 @@ export default async function ReviewPage({ params }: { params: Promise<{ siteId:
                   gap={GAP}
                   report={row.report}
                   narrative={row.narrative}
-                  org={{ name: org.name, primary: org.primary, accent: org.accent, footer: org.footer, initials: "NF" }}
-                  client={{ name: row.client.name }}
+                  org={{ name: org.name, primary: org.primary, accent: org.accent, footer: org.footer, initials: org.initials, logoUrl: org.logoUrl }}
+                  client={{ name: row.client.name, logoUrl: row.client.logoUrl }}
                   preparedBy={row.manager.name}
-                  managerNotes={notes || null}
-                  generatedAt={new Date(now.getTime() - 16 * 86_400_000).toISOString()}
+                  managerNotes={row.notes || null}
+                  generatedAt={row.generatedAt}
                 />
               </div>
             </ScaledDocument>
           }
           panel={
             <ReviewPanel
-              initialStatus={row.status}
+              key={row.reportId}
+              siteId={row.site.id}
+              clientId={row.client.id}
+              status={row.status}
               findings={row.report.findings}
               contact={row.client.contact}
               narrativeSource={row.narrative.source}
               aiEnabled={row.client.aiEnabled}
               autoSend={row.client.autoSend}
-              shareHref={`/r/${shareToken(row.site.id)}`}
+              shareHref={row.shareToken ? `/r/${row.shareToken}` : null}
               pdfHref={`/api/reports/${row.site.id}/pdf`}
-              version={row.status === "sent" ? 3 : 2}
-              initialNotes={notes}
+              version={row.version}
+              notes={row.notes}
+              canEdit={ws.user.role !== "viewer"}
+              demo={ws.mode === "demo"}
+              deliveryStatus={row.deliveryStatus}
+              failureNote={row.status === "failed" ? FAILURE_NOTE : null}
             />
           }
         />
