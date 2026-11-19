@@ -35,9 +35,11 @@ npx playwright install chromium   # for PDFs and end-to-end tests
 npm run dev                        # http://localhost:3000
 ```
 
-The dashboard opens on a fictional agency, Northfold Studio, with eight
-clients and a full October cycle: reports in every state, alerts, pipeline
-runs and history.
+Open the demo from the landing page, or pick a role on `/sign-in`. The
+dashboard opens on a fictional agency, Northfold Studio, with eight clients
+and a full October cycle: reports in every state, alerts, pipeline runs and
+history. Without `DATABASE_URL`, each visitor's changes are saved in a
+Zod-validated cookie and emails are captured on **Sent emails**.
 
 ### Useful local modes
 
@@ -46,12 +48,33 @@ runs and history.
 | `npm run dev` | Dashboard with Turbopack. The first page compiles in about 10 seconds, later pages in under one |
 | `npm run build && npm start` | The production build. Dev mode compiles each page on first visit, so judge speed here |
 | `npm run demo` | Runs the real monthly pipeline on the demo agency: 8 PDFs in `output/reports/`, email previews in `output/emails/` |
-| `npm test` | 93 unit, contract, worker and pipeline tests |
+| `npm test` | 160 unit, contract, database (PGlite), worker and pipeline tests |
 | `npm run typecheck` | `tsc` in every workspace |
-| `npm run test:e2e` | Playwright on desktop and mobile against a production build |
+| `npm run lint` | ESLint across the monorepo with TypeScript, React hooks, accessibility and Next.js rules |
+| `npm run test:e2e` | 79 Playwright tests on desktop and mobile against a production build, including axe |
+| `npx tsx jobs/pipeline/src/cli.ts daily` | Owed backfills, fresh daily clicks and alert evaluation against `DATABASE_URL` |
+| `npx tsx jobs/pipeline/src/cli.ts backfill --site <id>` | Pull 16 months of Search Console history for one site |
 | `npx tsx jobs/pipeline/src/cli.ts monthly --period 2026-10 --dry-run` | A real run against `DATABASE_URL`, sending nothing |
 | `NEXT_DIST_DIR=.next-prod npm run build` | Build beside a running dev server without the two overwriting each other |
 | `node scripts/screenshot.mjs http://localhost:3100` | Regenerate and compress the README screenshots |
+
+### Trying the database mode locally
+
+No Postgres install needed: `scripts/local-db.ts` runs PGlite (Postgres in
+WebAssembly) behind a Postgres-protocol socket, with the migrations applied.
+
+```bash
+npx tsx scripts/local-db.ts                                         # 127.0.0.1:5544
+export DATABASE_URL=postgres://postgres@127.0.0.1:5544/postgres
+npm run seed -w @reportpilot/db
+npm run build
+DATABASE_POOL_MAX=1 AUTH_SECRET=$(openssl rand -hex 32) EMAIL_MODE=test npm start
+```
+
+Sign in as `tom@northfold.studio` (manager) or `amara@northfold.studio`
+(owner). Without `RESEND_API_KEY` the one-time sign-in link is printed to the
+server log. `scripts/db-mode-smoke.ts` drives this whole setup through a
+browser.
 
 ---
 
@@ -63,10 +86,20 @@ Nothing is required for the demo. All variables are listed in
 | Variable | Used by | Purpose |
 | --- | --- | --- |
 | `DATABASE_URL` | dashboard, jobs, worker | Postgres connection (pooled). Without it the dashboard uses the demo agency |
+| `AUTH_SECRET` | dashboard | At least 32 random characters; signs session cookies and print URLs. Required with a database |
+| `AUTH_EMAIL_FROM` | dashboard | Sender of sign-in emails (default `ReportPilot <sign-in@reportpilot.app>`) |
+| `DATABASE_POOL_MAX` | dashboard | Connections per server instance (default 5) |
+| `EMAIL_MODE` | dashboard | `test` captures report emails on **Sent emails** instead of sending them |
+| `RESEND_WEBHOOK_SECRET` | dashboard | Verifies Resend's delivery and bounce webhooks (`whsec_…`) |
+| `GOOGLE_SERVICE_ACCOUNT_EMAIL` | dashboard | Optional; the address shown in onboarding if the JSON key is not set on the dashboard |
+| `GITHUB_DISPATCH_TOKEN`, `GITHUB_REPOSITORY` | dashboard | Optional; lets onboarding start the backfill and a sample run on GitHub Actions straight away |
+| `SENTRY_DSN`, `NEXT_PUBLIC_SENTRY_DSN` | dashboard, jobs, worker | Optional error tracking |
+| `HEALTHCHECK_DAILY_URL` | daily job | Heartbeat for the alerts job |
+| `ALERT_FROM`, `ALERT_TO` | daily job, worker | Sender of alert emails, and a fallback recipient when a client has no manager |
 | `GOOGLE_SERVICE_ACCOUNT_JSON` | jobs | Service account for Search Console, on one line ([setup](docs/search-console-setup.md)) |
 | `PAGESPEED_API_KEY` | weekly job | PageSpeed Insights and CrUX History (free) |
 | `GEMINI_API_KEY` | monthly job | Optional AI wording, behind the [number check](#the-number-check) |
-| `RESEND_API_KEY` | monthly job, worker | Report and alert emails |
+| `RESEND_API_KEY` | dashboard, jobs, worker | Report, alert and sign-in emails |
 | `R2_ACCOUNT_ID`, `R2_BUCKET`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY` | monthly job | PDF storage on Cloudflare R2 |
 | `HEALTHCHECK_MONTHLY_URL` | monthly job | Heartbeat ping at start and finish |
 | `APP_URL` | dashboard, jobs | Public URL used in client report links |
@@ -121,18 +154,23 @@ on a Pro account or on Cloudflare.
 ```mermaid
 flowchart LR
     W["<b>Uptime Worker</b><br/>Cloudflare cron<br/>every 5 minutes"]
-    S["<b>Snapshot job</b><br/>PageSpeed, CrUX,<br/>URL Inspection<br/>every Monday"]
+    A["<b>Daily job</b><br/>backfill, daily clicks,<br/>alerts<br/>05:30 every day"]
+    S["<b>Snapshot job</b><br/>PageSpeed, CrUX,<br/>sitemaps, URL Inspection<br/>every Monday"]
     DB[("Postgres")]
-    P["<b>Monthly pipeline</b><br/>GitHub Actions, 2nd to 4th<br/><br/>Collect<br/>Calculate<br/>Insights<br/>Narrative<br/>Render PDF"]
-    D["<b>Dashboard</b><br/>Next.js on Vercel<br/>review and approve"]
+    P["<b>Monthly pipeline</b><br/>GitHub Actions, hourly 1st to 8th<br/>each client at 06:00 local<br/><br/>Collect<br/>Calculate<br/>Insights<br/>Narrative<br/>Render PDF"]
+    D["<b>Dashboard</b><br/>Next.js on Vercel<br/>sign in, review, approve"]
     E["<b>Client</b><br/>email, PDF and<br/>private link"]
+    R["<b>Resend</b><br/>delivery webhook"]
 
-    W -->|"checks"| DB
+    W -->|"checks, downtime alerts"| DB
+    A -->|"aggregates, alerts"| DB
     S -->|"speed, indexing"| DB
     DB <-->|"every stage saved"| P
     DB <--> D
     D -->|"approved"| P
     P -->|"send"| E
+    D -->|"send now"| E
+    R -->|"delivered, bounced"| D
 ```
 
 An npm workspaces monorepo. Every package ships TypeScript source; Next.js and
@@ -174,19 +212,31 @@ site, `runSite(site, period, deps)`:
 
 | Stage | What happens | Reliability |
 | --- | --- | --- |
-| Plan | Upsert the report on `(site_id, period)` | A unique index: re-running never duplicates |
-| Collect | Search Console (this month, last month, last year, 13-month trend), speed snapshot, uptime, indexing | Sources are independent; a failure is recorded and the section says "unavailable" |
+| Plan | Work out each client's month from their time zone; process only sites whose report day has reached 06:00 locally; upsert the report on `(site_id, period)` | Pure, tested scheduling; a unique index means re-running never duplicates |
+| Collect | Search Console (this month, last month, last year, 13-month trend; earlier months from the archive the backfill filled), speed snapshot, uptime, sitemaps and URL Inspection | Sources are independent; a failure is recorded and the section says "unavailable" |
 | Calculate and insights | `buildReport` | Pure, unit-tested |
 | Narrative | Template text, optionally rewritten by AI | The number check decides |
-| Render | PDF stored under `reports/<org>/<site>/<period>/v<n>.pdf` | Versioned keys; a sent file is never overwritten |
+| Render | PDF stored under `reports/<org>/<site>/<period>/v<n>.pdf`, with a `report_versions` row | Size check (8 MB); versioned keys; a re-render or send makes a new version |
 | Review | Auto-send clients are approved and audit-logged; others wait at `draft` | Nothing reaches a client without approval |
-| Deliver | Email with PDF, private link and plain-text alternative | Sent once; dry runs write the email to `output/` |
+| Deliver | Email with PDF, private link and plain-text alternative; Resend's id and delivery status stored | Sent once; bounces flag the contact through the webhook; dry runs write the email to `output/` |
 
 Every stage runs inside `withRetry` (three attempts, exponential backoff),
 writes a `job_runs` row per attempt and saves its output before the next
 starts, so a failed run resumes at the stage that failed. A site whose month
-Search Console has not finalised waits and is retried on the next scheduled
-day. Healthchecks.io is pinged at start and finish.
+Search Console has not finalised waits and is retried on the next hourly run.
+Healthchecks.io is pinged at start and finish.
+
+### Between reports
+
+| Job | Schedule | What it does |
+| --- | --- | --- |
+| Uptime worker | Every 5 minutes | Keyword check, two-failure rule, TLS handshake result; an incident and a downtime alert are written together |
+| Daily alerts | 05:30 UTC | Finishes owed 16-month backfills, refreshes 40 days of daily clicks, then raises or resolves alerts: SSL (21 and 7 days), domain (30 and 10), clicks down 30% on the previous four weeks, a Core Web Vital 20% worse and no longer good, key pages out of the index |
+| Weekly snapshot | Mondays 05:00 UTC | PageSpeed median of three, CrUX history, URL Inspection, `sitemaps.list`, SSL and domain expiry |
+| Resend webhook | On delivery events | Stores delivered, bounced or complained; a bounce flags the contact and raises an alert |
+
+Each alert has a dedupe key, so a condition emails once per window, and alerts
+whose condition clears resolve themselves.
 
 ---
 
@@ -226,7 +276,10 @@ sent, never contact details, and AI can be turned off per client. See
 
 - **Google access** is read-only: a service account added as a Restricted user, revocable by the client at any time.
 - **Report links** use random 128-bit tokens, expire after 90 days, can be revoked, and are served with `X-Robots-Tag: noindex` and `no-referrer`.
-- **Every query** is scoped by organisation; optional row-level security policies are in [`packages/db/sql`](packages/db/sql/row-level-security.sql).
+- **Sign-in** is by one-time email link (15 minutes, single use, only a SHA-256 hash stored). Sessions are HMAC-signed cookies checked in middleware for every dashboard route. The print page needs a session or a five-minute signed URL.
+- **Roles:** owners manage branding; managers review, approve and send; viewers read. The rules live in one tested module ([`core/workflow.ts`](packages/core/src/workflow.ts)) used by both the database layer and the demo.
+- **Every query** is scoped by organisation, and tests try to read another agency's rows; row-level security policies enforce the same rule in Postgres ([`packages/db/sql`](packages/db/sql/row-level-security.sql), tested on PGlite).
+- **Input** to every server action and to the jobs' environment is validated with Zod.
 - **Headers:** `X-Frame-Options: DENY`, `X-Content-Type-Options: nosniff` and a restrictive `Permissions-Policy` on every page.
 - **Retention:** raw uptime checks are deleted after 90 days; client contact emails are the only personal data ([privacy](docs/privacy.md)).
 
@@ -239,12 +292,16 @@ sent, never contact details, and AI can be turned off per client. See
 | Unit | `packages/core/test` | Every calculation has a known answer; reports are deterministic; the number check rejects invented figures |
 | Contract | `packages/integrations/test` | Pagination, retries, auth and parsing against recorded responses, never live Google |
 | Worker | `workers/uptime/test` | The two-failure rule, keyword checks, recovery and the nightly rollup |
-| Pipeline | `jobs/pipeline/test` | Idempotency, resume after failure, partial data, the approval gate, dry runs, AI fallback |
-| End to end | `e2e/` | Review flow, onboarding, alerts, `noindex` links, reduced motion, hero above the fold on seven screen sizes, no horizontal scroll at four widths |
+| Pipeline | `jobs/pipeline/test` | Idempotency, resume after failure, partial data, the approval gate, dry runs, AI fallback, per-client scheduling, versions, the archive, backfill, alerts, env validation |
+| Database | `packages/db/test` | The dashboard's queries and writes on PGlite with the real migrations: workflow, org isolation, share links, bounces, sign-in tokens, row-level security |
+| End to end | `e2e/` | Onboard → generate → approve → send → email captured; revoking links; persistence; sign-in, forged cookies and roles; review flow, alerts, `noindex` links, reduced motion, hero above the fold on seven screen sizes, no horizontal scroll at four widths |
+| Accessibility | `e2e/a11y.spec.ts` | axe on every page type against WCAG 2.2 AA |
 | Visual | `e2e/pdf.spec.ts` | Each PDF page against an approved snapshot |
 | Serverless | `scripts/serverless-pdf-smoke.ts` | The Vercel PDF path prints a real PDF on Linux |
 
-CI runs all of them, plus a gitleaks secret scan, on every push.
+CI runs all of them, plus ESLint and a gitleaks secret scan, on every push.
+`scripts/db-mode-smoke.ts` drives the app in database mode through a browser
+(see [trying the database mode locally](#trying-the-database-mode-locally)).
 
 ---
 
@@ -316,8 +373,11 @@ More operational cases are in the [runbook](docs/runbook.md).
 
 ## Limitations
 
-- Dashboard actions (approve, notes, alert acknowledgement, branding) update local state in demo mode; the server actions that persist them are not written yet.
-- No authentication provider is wired up; the schema has users, roles and row-level security ready for one.
 - Search Console covers organic Google search only. GA4 is planned.
-- Uptime is checked from one region.
-- Bounce handling is designed but the Resend webhook endpoint is not built.
+- There is no screen for inviting team members; users and memberships are added with the seed script or SQL. Sign-in is by email link only.
+- The database code is tested on PGlite and smoke-tested in a browser; no CI job runs against a hosted Neon or Supabase database.
+- Live Google, PageSpeed and Resend calls are covered by contract tests on recorded responses, not called from tests.
+- PDF visual baselines are per machine; CI generates its own on each run.
+- In the demo, uploaded logos are shown in the preview but not kept (each visitor's changes live in a small cookie).
+- Uptime is checked from one region. Workers cannot read a peer certificate, so expiry dates come from the weekly job; the worker records whether the TLS handshake succeeded.
+- Accessibility is checked with axe on every page type; a full screen-reader audit has not been done.
