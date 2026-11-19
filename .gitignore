@@ -46,3 +46,6 @@ e2e/**/*-snapshots/*-darwin.png
 # local helper scripts
 scripts/.*.mjs
 apps/web/next-env.d.ts
+
+# Vercel CLI project link
+.vercel/
