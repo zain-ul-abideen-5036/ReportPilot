@@ -1,0 +1,40 @@
+name: Backfill Search Console history
+
+# Pulls 16 months of Search Console history for one site, so its first
+# report has year-on-year figures. The dashboard starts this from the
+# onboarding wizard when a GitHub token is configured; otherwise the daily
+# job picks up any site that is still owed a backfill.
+on:
+  workflow_dispatch:
+    inputs:
+      site:
+        description: "Site id"
+        required: true
+      months:
+        description: "Months of history (Search Console keeps 16)"
+        required: false
+        default: "16"
+
+concurrency:
+  group: backfill-${{ inputs.site }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  backfill:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
+      SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npx tsx jobs/pipeline/src/cli.ts backfill --site "${{ inputs.site }}" --months "${{ inputs.months }}"

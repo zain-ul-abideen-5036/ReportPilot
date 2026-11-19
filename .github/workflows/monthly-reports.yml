@@ -1,11 +1,13 @@
 name: Monthly reports
 
-# Search Console data lags 2–3 days, so the run is scheduled on the 2nd,
-# 3rd and 4th at 06:00 UTC. The pipeline is idempotent: sites whose month
-# is not final yet wait, and sites already done are skipped.
+# Each client gets their report at 06:00 on their own report day (2nd–8th)
+# in their own time zone. The workflow wakes hourly through that window and
+# the plan step processes only the sites that are due, so Sydney goes out
+# before London without a schedule per client. The pipeline is idempotent:
+# sites already sent are skipped and sites whose month is not final wait.
 on:
   schedule:
-    - cron: "0 6 2-4 * *"
+    - cron: "20 * 1-8 * *"
   workflow_dispatch:
     inputs:
       period:
@@ -41,16 +43,33 @@ jobs:
       R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
       R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
       HEALTHCHECK_MONTHLY_URL: ${{ secrets.HEALTHCHECK_MONTHLY_URL }}
+      SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
       APP_URL: ${{ vars.APP_URL }}
     steps:
+      # The hourly schedule only does work where a database is configured;
+      # on a fork it stops here in a few seconds instead of running the demo 190 times a month.
+      - name: Check configuration
+        id: cfg
+        run: |
+          if [ "${{ github.event_name }}" = "schedule" ] && [ -z "$DATABASE_URL" ]; then
+            echo "No DATABASE_URL secret; scheduled run skipped. Use 'Run workflow' to try the demo."
+            echo "run=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "run=true" >> "$GITHUB_OUTPUT"
+          fi
       - uses: actions/checkout@v4
+        if: steps.cfg.outputs.run == 'true'
       - uses: actions/setup-node@v4
+        if: steps.cfg.outputs.run == 'true'
         with:
           node-version: 22
           cache: npm
       - run: npm ci
+        if: steps.cfg.outputs.run == 'true'
       - run: npx playwright install --with-deps chromium
+        if: steps.cfg.outputs.run == 'true'
       - name: Run the pipeline
+        if: steps.cfg.outputs.run == 'true'
         run: |
           ARGS=""
           [ -n "${{ inputs.period }}" ] && ARGS="$ARGS --period ${{ inputs.period }}"

@@ -1,0 +1,49 @@
+name: Daily alerts
+
+# Finishes any owed 16-month backfill, refreshes daily Search Console
+# totals and raises alerts between reports: SSL and domain expiry, traffic
+# drops, Core Web Vitals regressions and key pages leaving the index.
+# Downtime alerts come from the uptime worker within minutes.
+on:
+  schedule:
+    - cron: "30 5 * * *"
+  workflow_dispatch:
+    inputs:
+      site:
+        description: "Run a single site id"
+        required: false
+
+concurrency:
+  group: daily-alerts
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  daily:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
+      RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+      ALERT_FROM: ${{ vars.ALERT_FROM }}
+      ALERT_TO: ${{ vars.ALERT_TO }}
+      HEALTHCHECK_DAILY_URL: ${{ secrets.HEALTHCHECK_DAILY_URL }}
+      SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
+      APP_URL: ${{ vars.APP_URL }}
+    # Nothing to check without a database (forks, the public demo).
+    if: ${{ vars.ENABLE_JOBS == 'true' || github.event_name == 'workflow_dispatch' }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Run the daily job
+        run: |
+          ARGS=""
+          [ -n "${{ inputs.site }}" ] && ARGS="--site ${{ inputs.site }}"
+          npx tsx jobs/pipeline/src/cli.ts daily $ARGS
