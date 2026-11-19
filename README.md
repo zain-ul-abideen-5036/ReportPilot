@@ -84,16 +84,24 @@ npx playwright install chromium   # for PDF downloads
 npm run dev                        # http://localhost:3000
 ```
 
-The app opens on a fictional agency, Northfold Studio, and its eight clients,
-each with a story to tell: a dental practice growing steadily, an outdoor shop
+**Open the demo** signs you in as the account manager of a fictional agency,
+Northfold Studio (the sign-in page also offers the owner and a read-only
+viewer). Its eight clients each have a story to tell: a dental practice growing steadily, an outdoor shop
 hit by an algorithm update, a vet whose SSL certificate expires in five days, a
 heating engineer whose new chat widget slowed the site down.
+
+Everything you change in the demo (notes, approvals, alerts, branding, new
+clients) is saved for you, in your browser, and the emails you send are
+captured on a **Sent emails** page instead of going out.
 
 To run the real monthly pipeline end to end and get eight PDFs in `output/`:
 
 ```bash
 npm run demo
 ```
+
+To try the database mode with email sign-in, without installing Postgres, run
+the [local database](TECHNICAL_README.md#trying-the-database-mode-locally).
 
 To put it online, follow the [Vercel guide](docs/vercel-deployment.md): import
 the repository, set the root directory to `apps/web`, deploy. To connect real
@@ -242,24 +250,27 @@ scores as the median of three runs, for the homepage and up to five key pages.
 **Watch uptime between reports**
 
 Checks every five minutes that require the page's own text, not just a 200; an
-incident opens only after two failures 30 seconds apart. SSL and domain expiry
-too.
+incident opens only after two failures 30 seconds apart. A daily job alerts on
+expiring SSL and domains, traffic drops, Core Web Vitals regressions and pages
+leaving Google's index.
 
 </td>
 <td width="33%" valign="top">
 
 **Review, note and approve**
 
-Read the draft as the client will see it, add a personal note, approve or turn
-on auto-send per client. Every step is versioned and logged.
+Read the draft as the client will see it, add a personal note, approve, send,
+or turn on auto-send per client. Owners, managers and read-only viewers each
+see what they may do. Every PDF is versioned and every action logged.
 
 </td>
 <td width="33%" valign="top">
 
 **Send it in your brand**
 
-Your colours, name, sender address and footer on every page and email. The
-client gets the PDF and a private link that works on a phone, valid for 90 days.
+Your logo, colours, name, sender address and footer on every page and email,
+and the client's logo on the cover. The client gets the PDF and a private link
+that works on a phone, valid for 90 days and revocable at any time.
 
 </td>
 </tr>
@@ -271,10 +282,12 @@ client gets the PDF and a private link that works on a phone, valid for 90 days.
 
 <img src="docs/screenshots/section-how-it-works.png" alt="Six stages, all of them unattended but one. On the 3rd of each month, once Google marks the previous month final, a scheduled job works through every site. Collect: Search Console, PageSpeed, CrUX, uptime. Calculate: changes, opportunities, vitals. Write: rules, templates, checked AI. Render: branded A4 PDF. Review: you add a note, approve. Send: email, PDF, private link. Every stage saves its work, so a failed run picks up where it stopped." width="100%" />
 
-Uptime runs on Cloudflare Workers every five minutes, a snapshot job collects
-speed and indexing every Monday, and the monthly pipeline runs on GitHub
-Actions on the 2nd, 3rd and 4th. Each report is keyed on site and month, so
-re-running never duplicates and never sends twice. The architecture and every
+Uptime runs on Cloudflare Workers every five minutes, a daily job raises the
+other alerts and finishes any 16-month backfill for new clients, a snapshot
+job collects speed, sitemaps and indexing every Monday, and the monthly
+pipeline wakes hourly from the 1st to the 8th, processing each client at 06:00
+on their own report day in their own time zone. Each report is keyed on site
+and month, so re-running never duplicates and never sends twice. The architecture and every
 stage are described in the [technical documentation](TECHNICAL_README.md#architecture).
 
 ---
@@ -394,8 +407,9 @@ The full breakdown, with the role each one plays, is in the
 
 - **Monthly retainer reporting.** The job it was built for: one report per
   client per month, drafted overnight, approved in minutes.
-- **Catching problems early.** Downtime, expiring certificates and domains,
-  traffic drops and speed regressions raise alerts the day they happen, not at
+- **Catching problems early.** Downtime raises an alert within minutes;
+  expiring certificates and domains, traffic drops, speed regressions and
+  pages leaving Google's index are caught by the next morning's check, not at
   month end.
 - **Showing the value of SEO work.** Year-on-year trends, branded versus
   non-branded traffic and the opportunities list make the work visible.
@@ -421,6 +435,8 @@ three days behind by design.
 | **A number check on AI** | The model may rephrase, never restate: any figure in its text that is not in the data and the template wins. |
 | **Service-account access** | Read-only Search Console access without an OAuth consent screen or Google's app verification, revocable by the client at any time. |
 | **Serverless PDFs that actually work** | `@sparticuz/chromium` with `playwright-core` pinned to the matching Chromium, its browser files shipped explicitly, and a CI smoke test that prints a PDF through that path on Linux. |
+| **Tested against real Postgres** | The dashboard's data layer and the row-level security policies run against PGlite (Postgres in process) with the real migrations, and a browser smoke test drives the whole app in database mode. |
+| **Accessible by test** | axe checks every page type against WCAG 2.2 AA in CI, alongside the tagged, outlined PDF. |
 | **Responsive by test, not by eye** | Playwright checks the hero is above the fold on seven screen sizes and that no page scrolls sideways at four widths, on desktop and mobile. |
 
 ---
@@ -457,31 +473,43 @@ architecture, the pipeline and deployment, lives in one place:
 ## Project status
 
 Ready to deploy to Vercel with no configuration, and runnable on any machine
-with Node.js. Continuous integration runs typecheck, 93 unit and contract
-tests, the production build, Playwright end-to-end and PDF visual tests, the
-serverless PDF smoke test and a secret scan on every push.
+with Node.js. Continuous integration runs typecheck, lint, 160 unit, contract,
+database and pipeline tests, the production build, 79 Playwright end-to-end,
+accessibility and PDF visual tests, the serverless PDF smoke test and a secret
+scan on every push.
 
-- Complete monthly loop: collection, calculation, insights, narrative with the
-  number check, PDF rendering, approval and delivery
-- Dashboard, landing page, client web report, branding studio and onboarding
-  wizard, responsive from 360 px
-- Uptime worker with the two-failure rule, alerts and nightly rollup
-- Database schema for every table in the specification, with a generated
-  migration, demo seed and optional row-level security
+- Complete monthly loop: per-client scheduling, collection with a Search
+  Console archive and 16-month backfill, calculation, insights, narrative with
+  the number check, versioned PDFs, approval and delivery with bounce tracking
+- Sign-in with one-time email links, owner, manager and viewer roles, and a
+  dashboard whose every action is saved, validated and audit-logged
+- Alerts between reports: downtime from the uptime worker, and SSL, domain,
+  traffic, Core Web Vitals, indexing and bounced-email alerts from the daily job
+- Error tracking with Sentry in the dashboard, the jobs and the worker, when a
+  DSN is set
 
 Known gaps, stated plainly:
 
-- **Dashboard actions are not persisted yet.** Approve, notes, alert
-  acknowledgement and branding work in the interface but update local state in
-  demo mode; the database layer and pipeline already support them, and the
-  server actions connecting the two are next.
-- **No sign-in yet.** Users, roles and memberships are in the schema, but no
-  authentication provider is wired up.
-- **GA4 is not integrated.** Search Console covers organic Google search only.
+- **GA4 is not integrated.** Search Console covers organic Google search only;
+  analytics, conversions and traffic sources are the planned next step.
+- **No team management screen.** Owners, managers and viewers work, but new
+  members are added with the seed script or SQL, not invited from the
+  dashboard. Sign-in is by email link only; there is no SSO.
+- **Not yet run against a hosted database in CI.** The database code is tested
+  on PGlite and smoke-tested through a browser in database mode; a scheduled
+  check against a real Neon or Supabase instance is not set up.
+- **Live Google, PageSpeed and Resend calls are not exercised by tests.** They
+  are covered by contract tests on recorded responses, by design.
+- **PDF visual baselines are per machine.** CI renders the pages on Linux and
+  creates its baselines on each run, so it catches rendering failures but
+  compares pixels only on a machine with approved snapshots.
+- **In the demo, uploaded logos are not kept.** Each visitor's changes live in
+  a small cookie, which has no room for an image; with a database, logos are
+  stored in R2.
 - **Uptime runs from one region.** Cloudflare's network is reliable, but this
   is not multi-region monitoring.
-- **Bounce handling** is designed (contacts are flagged) but the Resend
-  webhook endpoint is not built.
+- **Accessibility is checked automatically.** axe finds roughly a third of
+  issues; a full screen-reader audit has not been done.
 
 ---
 
