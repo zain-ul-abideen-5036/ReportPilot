@@ -34,7 +34,14 @@ export function ReviewLayout({ preview, panel, pageNav }: { preview: React.React
           {pageNav}
           <div className="rounded-lg bg-sunken p-3 sm:p-6 lg:p-8">{preview}</div>
         </div>
-        <aside className={cn("lg:sticky lg:top-6 lg:self-start", tab !== "review" && "hidden lg:block")}>{panel}</aside>
+        <aside
+          className={cn(
+            "lg:sticky lg:top-6 lg:max-h-[calc(100svh-3rem)] lg:self-start lg:overflow-y-auto lg:overscroll-contain lg:pr-1 [scrollbar-gutter:stable] [scrollbar-width:thin]",
+            tab !== "review" && "hidden lg:block",
+          )}
+        >
+          {panel}
+        </aside>
       </div>
     </>
   );

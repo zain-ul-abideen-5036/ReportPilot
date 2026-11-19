@@ -116,12 +116,12 @@ export function BrandingStudio({ initial, sample }: Props) {
         </div>
       </form>
 
-      <div className="min-w-0 lg:sticky lg:top-6 lg:self-start">
+      <div className="min-w-0 lg:sticky lg:top-6 lg:flex lg:max-h-[calc(100svh-3rem)] lg:flex-col lg:self-start">
         <p className="mb-3 flex items-baseline justify-between text-small">
           <span className="font-semibold text-ink">Live preview</span>
           <span className="text-ink-3">{sample.client}, cover and summary</span>
         </p>
-        <div className="rounded-lg bg-sunken p-4 sm:p-6">
+        <div className="rounded-lg bg-sunken p-4 sm:p-6 lg:min-h-0 lg:flex-1 lg:overflow-y-auto lg:overscroll-contain [scrollbar-width:thin]">
           <ScaledDocument pages={2} gap={20}>
             <div className="[&_.rp-page]:rounded-[3px] [&_.rp-page]:shadow-sheet">
               <ReportDocument
