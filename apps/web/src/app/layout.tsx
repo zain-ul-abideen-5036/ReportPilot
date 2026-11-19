@@ -9,7 +9,7 @@ const fraunces = Fraunces({
   variable: "--font-fraunces",
   display: "swap",
   style: ["normal", "italic"],
-  axes: ["SOFT", "WONK", "opsz"],
+  axes: ["SOFT", "opsz"],
 });
 
 export const metadata: Metadata = {
