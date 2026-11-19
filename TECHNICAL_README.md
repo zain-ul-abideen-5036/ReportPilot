@@ -63,7 +63,9 @@ against the in-memory store and demo collectors.
 
 | Command | What it does |
 | --- | --- |
-| `npm run dev` | Dashboard on port 3000 with the demo agency |
+| `npm run dev` | Dashboard on port 3000 with the demo agency, using Turbopack (first page ~10 s cold, then under a second) |
+| `npm start` | Serve the production build. Dev mode compiles each page on first visit; judge speed here, not in dev |
+| `NEXT_DIST_DIR=.next-prod npm run build` | Build beside a running dev server without the two overwriting each other |
 | `npm run demo` | Monthly pipeline end to end with demo data; PDFs to `output/` |
 | `npm test` | Vitest: core, integrations, worker and pipeline |
 | `npm run typecheck` | `tsc` in every workspace |

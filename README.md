@@ -144,8 +144,10 @@ cd ReportPilot
 npm install
 npx playwright install chromium
 
-npm run dev        # the dashboard and landing page on http://localhost:3000
+npm run dev        # the dashboard and landing page on http://localhost:3000 (Turbopack)
 npm run demo       # run the real monthly pipeline end to end: 8 PDFs in output/
+
+npm run build && npm start   # production build: what visitors actually get
 ```
 
 The demo is a fictional agency, Northfold Studio, with eight clients. Each one
