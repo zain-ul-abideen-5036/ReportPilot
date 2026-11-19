@@ -2,12 +2,14 @@
 
 import { useEffect } from "react";
 import { ArrowClockwise } from "@phosphor-icons/react";
+import * as Sentry from "@sentry/nextjs";
 import { Button } from "@/components/ui/Button";
 
 /** Says what happened and offers the one thing that usually fixes it. */
 export default function AppError({ error, reset }: { error: Error & { digest?: string }; reset: () => void }) {
   useEffect(() => {
     console.error(error);
+    Sentry.captureException(error);
   }, [error]);
   return (
     <div className="mx-auto flex max-w-[46ch] flex-col items-center py-32 text-center">
