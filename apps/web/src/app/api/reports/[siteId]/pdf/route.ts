@@ -4,6 +4,8 @@ import { getSite } from "@/lib/data";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
+// Starting Chromium in a cold serverless function takes a few seconds.
+export const maxDuration = 60;
 
 /**
  * Download the report as a PDF. In production the PDF is rendered once by
@@ -25,7 +27,13 @@ export async function GET(req: Request, { params }: { params: Promise<{ siteId: 
     if (!job) {
       const { printUrlToPdf } = await import("@reportpilot/report/pdf");
       const origin = new URL(req.url).origin;
-      job = printUrlToPdf(`${origin}/print/${row.site.id}`, { cookie: req.headers.get("cookie") ?? undefined });
+      // On protected Vercel preview deployments the print page would answer
+      // with a login screen; Vercel's automation bypass secret lets it through.
+      const bypass = process.env.VERCEL_AUTOMATION_BYPASS_SECRET;
+      job = printUrlToPdf(`${origin}/print/${row.site.id}`, {
+        cookie: req.headers.get("cookie") ?? undefined,
+        headers: bypass ? { "x-vercel-protection-bypass": bypass } : {},
+      });
       rendered.set(row.site.id, job);
       job.catch(() => rendered.delete(row.site.id));
     }
