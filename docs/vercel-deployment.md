@@ -130,13 +130,20 @@ Add these under **Settings → Environment Variables**, then **redeploy**
 | --- | --- | --- |
 | *(none)* | **The demo** | Runs on the bundled sample agency |
 | `APP_URL` | Links in emails | Your production URL, for example `https://reportpilot.vercel.app` |
-| `DATABASE_URL` | Real data | Postgres on Neon or Supabase; use the **pooled** connection string. See [deployment.md](deployment.md#1-database) |
+| `DATABASE_URL` | Real data | Postgres on Neon or Supabase; use the **pooled** connection string. See [deployment.md](deployment.md#1-database). Setting it switches the demo accounts off and email sign-in on |
+| `AUTH_SECRET` | Sign-in, with a database | 32 or more random characters (`openssl rand -hex 32`). Signs session cookies and PDF print URLs |
+| `RESEND_API_KEY` | Sign-in links and Send now | Without it, links are printed to the function log and report emails are captured |
+| `EMAIL_MODE` | Preview deployments | Set to `test` so Send now captures emails instead of sending them |
+| `RESEND_WEBHOOK_SECRET` | Delivery and bounce tracking | From the Resend webhook pointing at `/api/webhooks/resend` |
+| `R2_ACCOUNT_ID`, `R2_BUCKET`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY` | Logos and sent PDFs | Optional; without R2, small logos are stored in the database |
+| `GOOGLE_SERVICE_ACCOUNT_JSON` | Test connection in onboarding | Optional on Vercel; the jobs need it in GitHub secrets either way |
+| `GITHUB_DISPATCH_TOKEN`, `GITHUB_REPOSITORY` | Instant backfill for new clients | Optional; otherwise the daily job picks new clients up |
 | `VERCEL_AUTOMATION_BYPASS_SECRET` | PDFs on protected previews | Created by Vercel, see [below](#preview-deployments-and-protection) |
-| `SENTRY_DSN` | Error tracking | Optional |
+| `SENTRY_DSN`, `NEXT_PUBLIC_SENTRY_DSN` | Error tracking | Optional; the public one is read at build time for browser errors |
 
-Secrets for the jobs (`GOOGLE_SERVICE_ACCOUNT_JSON`, `RESEND_API_KEY`, the R2
-keys) belong in **GitHub Actions secrets**, not in Vercel: the dashboard does
-not use them.
+The scheduled jobs' secrets (`GOOGLE_SERVICE_ACCOUNT_JSON`, `PAGESPEED_API_KEY`,
+`RESEND_API_KEY`, the R2 keys) also go in **GitHub Actions secrets**, because
+the jobs run there, not on Vercel.
 
 ---
 

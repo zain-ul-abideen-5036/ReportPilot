@@ -30,8 +30,22 @@ Vercel's Hobby plan is free for non-commercial use; for paying clients use a
 Pro plan, or **Cloudflare**, which allows commercial use on its free plan.
 Either way the dashboard builds from `apps/web` with `npm run build`.
 
-Set `DATABASE_URL` and `APP_URL`. Without `DATABASE_URL` the dashboard runs
-in demo mode with the sample agency, which is how the public demo is hosted.
+Set `DATABASE_URL`, `AUTH_SECRET` (32 or more random characters, e.g.
+`openssl rand -hex 32`), `APP_URL` and `RESEND_API_KEY` (for sign-in links
+and Send now). Without `DATABASE_URL` the dashboard runs in demo mode with the
+sample agency, which is how the public demo is hosted; the demo accounts are
+switched off as soon as a database is configured.
+
+Members sign in with a one-time email link. The seed script creates the
+sample agency's people; for your own agency, insert your users and
+memberships (role `owner`, `manager` or `viewer`) with SQL until an
+invitation screen exists.
+
+**Delivery and bounces.** In Resend, add a webhook to
+`https://<your-app>/api/webhooks/resend` for `email.delivered`,
+`email.bounced` and `email.complained`, and set its signing secret as
+`RESEND_WEBHOOK_SECRET`. Set `EMAIL_MODE=test` on preview deployments so
+nothing reaches real clients.
 
 ## 3. Uptime worker
 
@@ -49,20 +63,29 @@ set the repository variable `DEPLOY_WORKER=true`.
 
 ## 4. Scheduled jobs
 
-The monthly and weekly workflows run on GitHub Actions. Add these repository
-secrets:
+The monthly, weekly, daily-alerts and backfill workflows run on GitHub
+Actions. Add these repository secrets:
 
 | Secret | Used by |
 | --- | --- |
-| `DATABASE_URL` | monthly, weekly |
-| `GOOGLE_SERVICE_ACCOUNT_JSON` | monthly, weekly |
+| `DATABASE_URL` | monthly, weekly, daily, backfill |
+| `GOOGLE_SERVICE_ACCOUNT_JSON` | monthly, weekly, daily, backfill |
 | `PAGESPEED_API_KEY` | weekly |
-| `RESEND_API_KEY` | monthly |
+| `RESEND_API_KEY` | monthly, daily |
 | `R2_ACCOUNT_ID`, `R2_BUCKET`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY` | monthly |
 | `GEMINI_API_KEY` (optional) | monthly |
-| `HEALTHCHECK_MONTHLY_URL` (optional) | monthly |
+| `HEALTHCHECK_MONTHLY_URL`, `HEALTHCHECK_DAILY_URL` (optional) | monthly, daily |
+| `SENTRY_DSN` (optional) | all |
 
-and the repository variable `APP_URL`.
+and the repository variables `APP_URL`, `ALERT_FROM` and `ENABLE_JOBS=true`
+(the daily alerts job stays off on forks without it).
+
+The monthly workflow wakes hourly from the 1st to the 8th; each site is
+processed once its client's report day reaches 06:00 in their time zone, and
+scheduled runs exit within seconds when no `DATABASE_URL` is set. New sites
+get their 16-month backfill from the next daily run, or straight away if the
+dashboard has `GITHUB_DISPATCH_TOKEN` (a fine-grained token with *Actions:
+write*) and `GITHUB_REPOSITORY`.
 
 Before the first real run, trigger **Monthly reports** manually with
 *dry run* ticked. The generated PDFs and email previews are attached to the
@@ -78,7 +101,11 @@ run as an artifact.
 
 ## 6. Monitoring
 
-- Create a check on [Healthchecks.io](https://healthchecks.io) with a
-  schedule of "monthly, 2nd to 4th" and a grace period of 2 hours. Put its
-  ping URL in `HEALTHCHECK_MONTHLY_URL`.
-- Add a [Sentry](https://sentry.io) DSN as `SENTRY_DSN` for error tracking.
+- Create two checks on [Healthchecks.io](https://healthchecks.io): the
+  monthly job (expected on the report days, grace period 2 hours) in
+  `HEALTHCHECK_MONTHLY_URL`, and the daily job (daily, grace 2 hours) in
+  `HEALTHCHECK_DAILY_URL`.
+- Add a [Sentry](https://sentry.io) DSN as `SENTRY_DSN` for the server, jobs
+  and worker (`wrangler secret put SENTRY_DSN`), and as
+  `NEXT_PUBLIC_SENTRY_DSN` at build time for browser errors. Only error
+  messages and stack traces are sent; no report data or contacts.
