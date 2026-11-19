@@ -9,10 +9,10 @@ import { Photo } from "@/components/landing/Photo";
 import { BeforeAfter, CaseStudy, Chapter, Figures, FinalCta, Stack, Trust } from "@/components/landing/Sections";
 import { Logo } from "@/components/shell/Logo";
 import { ReportDocument } from "@reportpilot/report";
-import { getSite, now, org, shareToken } from "@/lib/data";
+import { sampleSite } from "@/lib/data";
 
 export default function Landing() {
-  const row = getSite("site_harlow")!;
+  const { row, org, now } = sampleSite("site_harlow");
   const input = {
     report: row.report,
     narrative: row.narrative,
@@ -54,10 +54,10 @@ export default function Landing() {
                 ReportPilot drafts it on the 3rd; you read it, add a line, and approve.
               </p>
               <div className="mt-8 flex flex-col gap-3 min-[420px]:flex-row min-[420px]:flex-wrap min-[420px]:items-center lg:mt-[clamp(1.25rem,4svh,2.25rem)]">
-                <Link href="/dashboard" className="press group inline-flex h-12 items-center justify-center gap-2 rounded-full bg-brand bg-brand-hover px-6 text-body font-semibold text-accent-ink shadow-[inset_0_1px_0_rgb(255_255_255/0.18),0_12px_28px_-12px_rgb(29_74_60/0.7)]">
+                <Link href="/demo" prefetch={false} className="press group inline-flex h-12 items-center justify-center gap-2 rounded-full bg-brand bg-brand-hover px-6 text-body font-semibold text-accent-ink shadow-[inset_0_1px_0_rgb(255_255_255/0.18),0_12px_28px_-12px_rgb(29_74_60/0.7)]">
                   Open the demo<ArrowRight size={16} className="transition-transform duration-(--duration-fast) group-hover:translate-x-0.5" aria-hidden />
                 </Link>
-                <Link href={`/r/${shareToken(row.site.id)}`} className="press inline-flex h-12 items-center justify-center rounded-full bg-raised px-6 text-body font-medium text-ink-2 hairline hover:text-ink">
+                <Link href={`/r/${row.shareToken}`} className="press inline-flex h-12 items-center justify-center rounded-full bg-raised px-6 text-body font-medium text-ink-2 hairline hover:text-ink">
                   Read a sample report
                 </Link>
               </div>
@@ -120,7 +120,7 @@ export default function Landing() {
                 </li>
               ))}
               <li className="border-t border-line pt-6">
-                <Link href={`/r/${shareToken(row.site.id)}`} className="group inline-flex items-center gap-1.5 text-body font-semibold text-accent">
+                <Link href={`/r/${row.shareToken}`} className="group inline-flex items-center gap-1.5 text-body font-semibold text-accent">
                   Read the full sample report<ArrowUpRight size={15} className="transition-transform duration-(--duration-fast) group-hover:translate-x-0.5 group-hover:-translate-y-0.5" aria-hidden />
                 </Link>
               </li>
