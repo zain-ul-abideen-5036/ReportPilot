@@ -256,8 +256,6 @@
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
-    -webkit-box-decoration-break: clone;
-    box-decoration-break: clone;
   }
   /* A hairline border drawn as a gradient: pine at one corner, brass at the other. */
   .ring-gradient {
