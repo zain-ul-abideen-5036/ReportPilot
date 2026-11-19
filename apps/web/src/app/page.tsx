@@ -35,48 +35,49 @@ export default function Landing() {
     <div className="grain min-h-dvh overflow-x-clip">
       <LandingNav />
       <main>
-        {/* Hero */}
+        {/* Hero: fills one screen on desktop, sized by both width and height. */}
         <section className="glow">
-          <div className="mx-auto grid max-w-[1240px] items-center gap-12 px-4 pt-14 pb-20 sm:px-6 md:pt-20 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,1fr)] lg:pb-28">
+          <div className="mx-auto grid max-w-[1240px] items-center gap-10 px-4 pt-10 pb-16 sm:px-6 sm:pt-14 md:gap-12 lg:min-h-[calc(100svh-4rem)] lg:grid-cols-[minmax(0,1.05fr)_minmax(0,1fr)] lg:py-[clamp(1.5rem,5svh,4.5rem)]">
             <div className="animate-enter">
-              <p className="inline-flex items-center gap-2 rounded-full bg-raised/80 px-3 py-1 text-small text-ink-2 shadow-raised backdrop-blur">
+              <p className="inline-flex items-center gap-2 rounded-full bg-raised px-3 py-1 text-small text-ink-2 shadow-raised">
                 <span className="relative flex size-2">
                   <span className="absolute inline-flex size-full rounded-full bg-good opacity-60 motion-safe:animate-ping" />
                   <span className="relative inline-flex size-2 rounded-full bg-good" />
                 </span>
                 For web agencies with monthly retainers
               </p>
-              <h1 className="mt-7 font-display text-[3.25rem] leading-[0.97] font-normal tracking-[-0.038em] text-ink sm:text-[4.75rem] lg:text-[5.5rem]">
-                The monthly report, <em className="display-wonk text-gradient pr-1">written</em> before you start work.
+              <h1 className="mt-6 font-display text-[clamp(2.5rem,10.6vw,3.4rem)] leading-[0.98] font-normal tracking-[-0.036em] text-ink sm:text-[4.25rem] lg:mt-[clamp(1rem,3.2svh,1.75rem)] lg:text-[clamp(3.25rem,min(5.5vw,9.2svh),5.5rem)]">
+                The monthly report, <em className="text-gradient pr-1">written</em> before you start work.
               </h1>
-              <p className="mt-7 max-w-[46ch] text-lead text-ink-2 sm:text-[1.125rem] sm:leading-[1.65]">
+              <p className="mt-6 max-w-[46ch] text-lead text-ink-2 sm:text-[1.125rem] sm:leading-[1.6] lg:mt-[clamp(1rem,3.2svh,1.75rem)] lg:max-w-[52ch]">
                 Every client gets a branded PDF on search, speed and uptime, with a plain-English summary of what changed and what to do next.
                 ReportPilot drafts it on the 3rd; you read it, add a line, and approve.
               </p>
-              <div className="mt-9 flex flex-wrap items-center gap-3">
-                <Link href="/dashboard" className="press group inline-flex h-12 items-center gap-2 rounded-full bg-brand bg-brand-hover px-6 text-body font-semibold text-accent-ink shadow-[inset_0_1px_0_rgb(255_255_255/0.18),0_12px_28px_-12px_rgb(29_74_60/0.7)]">
+              <div className="mt-8 flex flex-col gap-3 min-[420px]:flex-row min-[420px]:flex-wrap min-[420px]:items-center lg:mt-[clamp(1.25rem,4svh,2.25rem)]">
+                <Link href="/dashboard" className="press group inline-flex h-12 items-center justify-center gap-2 rounded-full bg-brand bg-brand-hover px-6 text-body font-semibold text-accent-ink shadow-[inset_0_1px_0_rgb(255_255_255/0.18),0_12px_28px_-12px_rgb(29_74_60/0.7)]">
                   Open the demo<ArrowRight size={16} className="transition-transform duration-(--duration-fast) group-hover:translate-x-0.5" aria-hidden />
                 </Link>
-                <Link href={`/r/${shareToken(row.site.id)}`} className="press inline-flex h-12 items-center rounded-full bg-raised/70 px-6 text-body font-medium text-ink-2 hairline backdrop-blur hover:bg-raised hover:text-ink">
+                <Link href={`/r/${shareToken(row.site.id)}`} className="press inline-flex h-12 items-center justify-center rounded-full bg-raised px-6 text-body font-medium text-ink-2 hairline hover:text-ink">
                   Read a sample report
                 </Link>
               </div>
-              <p className="mt-6 text-small text-ink-3">Free to run · No accounts for your clients · Demo data, no sign-up</p>
+              <p className="mt-6 text-small text-ink-3 lg:[@media(max-height:760px)]:hidden">Free to run · No accounts for your clients · Demo data, no sign-up</p>
             </div>
 
-            <div className="relative mx-auto hidden justify-center sm:flex lg:justify-end">
-              <PageStack input={input} />
-              <div className="absolute top-[18%] -left-6 flex items-center gap-3 rounded-xl bg-raised/95 px-4 py-3 shadow-sheet backdrop-blur motion-safe:animate-[float_7s_ease-in-out_infinite] lg:-left-10" aria-hidden>
-                <span className="flex size-9 items-center justify-center rounded-full bg-good-soft text-good"><TrendUp size={18} weight="bold" /></span>
-                <span>
-                  <span className="block text-micro text-ink-3">Organic clicks, year on year</span>
-                  <span className="block font-display text-title text-ink tnum">{formatSignedPct(clicks.yoy.pct)}</span>
-                </span>
-              </div>
-              <div className="absolute right-2 bottom-[8%] flex items-center gap-2.5 rounded-xl bg-raised/95 px-4 py-3 shadow-sheet backdrop-blur motion-safe:animate-[float_8s_ease-in-out_1.2s_infinite]" aria-hidden>
-                <CheckCircle size={20} weight="fill" className="text-accent" />
-                <span className="text-small"><span className="font-semibold text-ink">Approved</span> <span className="text-ink-3">by {row.manager.name.split(" ")[0]} · 09:12</span></span>
-              </div>
+            <div className="flex justify-center lg:justify-end">
+              <PageStack input={input}>
+                <div className="absolute top-[20%] left-0 flex items-center gap-3 rounded-xl bg-raised px-4 py-3 shadow-sheet motion-safe:animate-[float_7s_ease-in-out_infinite]">
+                  <span className="flex size-9 items-center justify-center rounded-full bg-good-soft text-good"><TrendUp size={18} weight="bold" /></span>
+                  <span>
+                    <span className="block text-micro text-ink-3">Organic clicks, year on year</span>
+                    <span className="block font-display text-title text-ink tnum">{formatSignedPct(clicks.yoy.pct)}</span>
+                  </span>
+                </div>
+                <div className="absolute right-0 bottom-[3%] flex items-center gap-2.5 rounded-xl bg-raised px-4 py-3 shadow-sheet motion-safe:animate-[float_8s_ease-in-out_1.2s_infinite]">
+                  <CheckCircle size={20} weight="fill" className="text-accent" />
+                  <span className="text-small"><span className="font-semibold text-ink">Approved</span> <span className="text-ink-3">by {row.manager.name.split(" ")[0]} · 09:12</span></span>
+                </div>
+              </PageStack>
             </div>
           </div>
         </section>
@@ -158,12 +159,12 @@ export default function Landing() {
       </main>
       <footer className="mx-auto flex max-w-[1240px] flex-col items-start justify-between gap-4 border-t border-line px-4 py-8 text-small text-ink-3 sm:flex-row sm:items-center sm:px-6">
         <Logo />
-        <p>Built by Zain Ul Abideen · MIT licence · Demo data is fictional · Photos CC0 via Openverse</p>
+        <p>Demo data is fictional · Photography CC0 via Openverse</p>
       </footer>
     </div>
   );
 }
 
 function PageStackSingle({ input }: { input: Parameters<typeof ReportDocument>[0] }) {
-  return <ReportDocument {...input} limit={1} />;
+  return <ReportDocument {...input} only={0} />;
 }
