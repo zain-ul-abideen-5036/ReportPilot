@@ -4,8 +4,9 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import {
-  Bell, ChartLineUp, FileText, GearSix, List, SquaresFour, Users, X, FlowArrow, CaretUpDown,
+  Bell, FileText, GearSix, List, SquaresFour, Users, X, FlowArrow, EnvelopeSimple, SignOut, ArrowCounterClockwise,
 } from "@phosphor-icons/react";
+import { resetDemo, signOut } from "@/lib/actions";
 import { NAV, isActive, type NavItem } from "./nav";
 import { Logo } from "./Logo";
 import { cn } from "@/lib/cn";
@@ -16,11 +17,14 @@ const ICONS: Record<NavItem["icon"], typeof Bell> = {
   clients: Users,
   alerts: Bell,
   pipeline: FlowArrow,
+  outbox: EnvelopeSimple,
   settings: GearSix,
 };
 
 interface SidebarProps {
   orgName: string;
+  orgInitials: string;
+  demo: boolean;
   user: { name: string; initials: string; role: string };
   badges: { review: number; alerts: number };
   cycle: { label: string; sent: number; total: number };
@@ -88,7 +92,7 @@ function CycleMeter({ cycle }: { cycle: SidebarProps["cycle"] }) {
   );
 }
 
-export function Sidebar({ orgName, user, badges, cycle }: SidebarProps) {
+export function Sidebar({ orgName, orgInitials, demo, user, badges, cycle }: SidebarProps) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
 
@@ -111,18 +115,13 @@ export function Sidebar({ orgName, user, badges, cycle }: SidebarProps) {
           <Logo />
         </Link>
       </div>
-      <button
-        type="button"
-        className="press mx-2 mb-4 flex items-center gap-2.5 rounded-md px-2 py-1.5 text-left hover:bg-sunken"
-        aria-label={`Workspace: ${orgName}`}
-      >
-        <span className="flex size-7 items-center justify-center rounded-md bg-ink text-micro font-semibold text-paper">NF</span>
+      <div className="mx-2 mb-4 flex items-center gap-2.5 rounded-md px-2 py-1.5">
+        <span className="flex size-7 items-center justify-center rounded-md bg-ink text-micro font-semibold text-paper">{orgInitials}</span>
         <span className="min-w-0 flex-1">
           <span className="block truncate text-small font-medium text-ink">{orgName}</span>
-          <span className="block text-micro text-ink-3">Agency workspace</span>
+          <span className="block text-micro text-ink-3">{demo ? "Demo workspace" : "Agency workspace"}</span>
         </span>
-        <CaretUpDown size={14} className="text-ink-4" aria-hidden />
-      </button>
+      </div>
       <nav aria-label="Main" className="px-2">
         <NavLinks badges={badges} pathname={pathname} onNavigate={() => setOpen(false)} />
       </nav>
@@ -134,8 +133,20 @@ export function Sidebar({ orgName, user, badges, cycle }: SidebarProps) {
             <span className="block truncate text-small font-medium text-ink">{user.name}</span>
             <span className="block text-micro text-ink-3 capitalize">{user.role}</span>
           </span>
-          <ChartLineUp size={16} className="text-ink-4" aria-hidden />
+          <form action={signOut}>
+            <button type="submit" className="press flex size-8 items-center justify-center rounded-md text-ink-3 hover:bg-sunken hover:text-ink" title="Sign out">
+              <SignOut size={16} aria-hidden />
+              <span className="sr-only">Sign out</span>
+            </button>
+          </form>
         </div>
+        {demo && (
+          <form action={resetDemo} className="px-1">
+            <button type="submit" className="press flex items-center gap-1.5 text-micro text-ink-3 hover:text-ink">
+              <ArrowCounterClockwise size={12} aria-hidden />Reset my demo changes
+            </button>
+          </form>
+        )}
       </div>
     </>
   );
