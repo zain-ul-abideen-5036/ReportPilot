@@ -9,7 +9,7 @@ import type { Logger } from "./log";
 /**
  * Weekly snapshot (Mondays 05:00 UTC): PageSpeed median of three for the
  * homepage and up to five key pages on mobile and desktop, CrUX history,
- * URL Inspection for key pages, and SSL and domain expiry.
+ * URL Inspection for key pages, sitemaps.list errors, and SSL and domain expiry.
  * Each site and each source is independent; one failure is logged and skipped.
  */
 export async function runWeekly({ log, demo }: { log: Logger; demo: boolean }) {
@@ -67,6 +67,20 @@ export async function runWeekly({ log, demo }: { log: Logger; demo: boolean }) {
         } catch (err) {
           slog.warn("url inspection failed", { url, error: (err as Error).message });
         }
+      }
+
+      try {
+        const maps = await gsc.sitemaps(site.gscProperty);
+        for (const m of maps) {
+          const values = {
+            errors: m.errors, warnings: m.warnings, submitted: m.submitted,
+            lastDownloaded: m.lastDownloaded ? new Date(m.lastDownloaded) : null, checkedAt: new Date(),
+          };
+          await db.insert(tables.sitemapStatus).values({ siteId: site.id, path: m.path, ...values })
+            .onConflictDoUpdate({ target: [tables.sitemapStatus.siteId, tables.sitemapStatus.path], set: values });
+        }
+      } catch (err) {
+        slog.warn("sitemaps failed", { error: (err as Error).message });
       }
     }
 
