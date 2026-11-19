@@ -95,6 +95,34 @@ describe("Search Console", () => {
     await new SearchConsole(auth, async (url) => { seen = url; return json({}); }).queryPage("sc-domain:example.test", { startDate: "a", endDate: "b" });
     expect(seen).toContain("sites/sc-domain%3Aexample.test/searchAnalytics/query");
   });
+
+  it("asks for fresh data for the daily alert sync and sorts the days", async () => {
+    let body: { dataState?: string; dimensions?: string[] } = {};
+    const fetch: FetchLike = async (_u, init) => {
+      body = JSON.parse(String(init!.body));
+      return json({ rows: [
+        { keys: ["2026-11-02"], clicks: 5, impressions: 50, ctr: 0.1, position: 4 },
+        { keys: ["2026-11-01"], clicks: 3, impressions: 40, ctr: 0.075, position: 5 },
+      ] });
+    };
+    const days = await new SearchConsole(auth, fetch).daily("p", "2026-11-01", "2026-11-02", "all");
+    expect(body.dataState).toBe("all");
+    expect(body.dimensions).toEqual(["date"]);
+    expect(days.map((d) => d.day)).toEqual(["2026-11-01", "2026-11-02"]);
+  });
+
+  it("reads sitemaps.list errors, warnings and submitted counts", async () => {
+    const fetch: FetchLike = async (url) => {
+      expect(url).toContain("/sitemaps");
+      return json({ sitemap: [{
+        path: "https://example.test/sitemap.xml", errors: "2", warnings: "1", lastDownloaded: "2026-10-30T04:00:00Z",
+        contents: [{ type: "web", submitted: "120" }, { type: "image", submitted: "30" }],
+      }] });
+    };
+    expect(await new SearchConsole(auth, fetch).sitemaps("p")).toEqual([
+      { path: "https://example.test/sitemap.xml", errors: 2, warnings: 1, submitted: 150, lastDownloaded: "2026-10-30T04:00:00Z" },
+    ]);
+  });
 });
 
 describe("PageSpeed Insights", () => {

@@ -98,6 +98,16 @@ export class SearchConsole {
     };
   }
 
+  /**
+   * Site totals per day. The alerts job asks for "all" rather than "final"
+   * so a traffic drop shows up within two days instead of four; the
+   * monthly report only ever uses final data.
+   */
+  async daily(property: string, startDate: string, endDate: string, dataState: "final" | "all" = "final"): Promise<DailySearchPoint[]> {
+    const rows = await this.queryAll(property, { startDate, endDate, dimensions: ["date"], dataState });
+    return rows.map(toDaily).sort((a, b) => a.day.localeCompare(b.day));
+  }
+
   async sitemaps(property: string): Promise<SitemapStatus[]> {
     const res = await requestJson<{ sitemap?: Array<{ path: string; errors?: string; warnings?: string; lastDownloaded?: string; contents?: Array<{ submitted?: string }> }> }>(
       `${BASE}/sites/${encodeURIComponent(property)}/sitemaps`,
