@@ -18,6 +18,8 @@
     "@reportpilot/demo": "*",
     "@reportpilot/integrations": "*",
     "@reportpilot/report": "*",
-    "aws4fetch": "^1.0.20"
+    "@sentry/node": "^11.14.0",
+    "aws4fetch": "^1.0.20",
+    "zod": "^4.6.7"
   }
 }
