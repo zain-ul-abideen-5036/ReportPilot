@@ -473,7 +473,7 @@ architecture, the pipeline and deployment, lives in one place:
 ## Project status
 
 Ready to deploy to Vercel with no configuration, and runnable on any machine
-with Node.js. Continuous integration runs typecheck, lint, 160 unit, contract,
+with Node.js. Continuous integration runs typecheck, lint, 162 unit, contract,
 database and pipeline tests, the production build, 79 Playwright end-to-end,
 accessibility and PDF visual tests, the serverless PDF smoke test and a secret
 scan on every push.

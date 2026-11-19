@@ -48,7 +48,7 @@ Zod-validated cookie and emails are captured on **Sent emails**.
 | `npm run dev` | Dashboard with Turbopack. The first page compiles in about 10 seconds, later pages in under one |
 | `npm run build && npm start` | The production build. Dev mode compiles each page on first visit, so judge speed here |
 | `npm run demo` | Runs the real monthly pipeline on the demo agency: 8 PDFs in `output/reports/`, email previews in `output/emails/` |
-| `npm test` | 160 unit, contract, database (PGlite), worker and pipeline tests |
+| `npm test` | 162 unit, contract, database (PGlite), worker and pipeline tests |
 | `npm run typecheck` | `tsc` in every workspace |
 | `npm run lint` | ESLint across the monorepo with TypeScript, React hooks, accessibility and Next.js rules |
 | `npm run test:e2e` | 79 Playwright tests on desktop and mobile against a production build, including axe |

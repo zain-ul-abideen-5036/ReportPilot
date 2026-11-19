@@ -40,7 +40,7 @@ Everything the specification asked for that 0.1.0 left as a gap.
   handshake result and names TLS failures.
 - **Sentry** in the dashboard (server and browser), the jobs and the worker,
   active when a DSN is set.
-- **Quality**: ESLint in CI; 160 unit, contract, database and pipeline tests,
+- **Quality**: ESLint in CI; 162 unit, contract, database and pipeline tests,
   with the database layer and row-level security tested on PGlite; 79
   Playwright tests including the full onboard → approve → send flow, roles and
   axe accessibility checks; a database-mode browser smoke test and a
