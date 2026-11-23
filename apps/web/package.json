@@ -17,7 +17,7 @@
     "@reportpilot/demo": "*",
     "@reportpilot/integrations": "*",
     "@reportpilot/report": "*",
-    "@sentry/nextjs": "^11.14.0",
+    "@sentry/nextjs": "^11.15.0",
     "aws4fetch": "^1.0.20",
     "drizzle-orm": "^0.45.4",
     "next": "^15.5.29",
